@@ -57,7 +57,13 @@ namespace FtexTool
 
         private static void ShowUsageInfo()
         {
-            Console.WriteLine("Usage:\r\nFtexTool.exe path");
+            Console.WriteLine("FtexTool by Atvaark\n" +
+                              "Description:\n" +
+                              "  Converting between Fox Engine texture (.ftex) and DirectDraw Surface (.dds).\n" +
+                              "Usage:\n" +
+                              "  FtexTool.exe directory -Unpacks every ftex file in the directory\n" +
+                              "  FtexTool.exe file.ftex -Unpacks a single ftex file\n" +
+                              "  FtexTool.exe file.dds  -Packs a single dds file\n");
         }
 
         private static void PackDdsFile(string filePath)
