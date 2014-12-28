@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using FtexTool.Dds;
 using FtexTool.Dds.Enum;
 using FtexTool.Ftex;
@@ -69,21 +70,33 @@ namespace FtexTool
 
         private static List<FtexsFile> GetFtexsFiles(List<FtexFileMipMapInfo> mipMapInfos, List<byte[]> mipMapDatas)
         {
-            List<FtexsFile> ftexsFiles = new List<FtexsFile>();
-            // HACK: For testing reasons all get put in one ftexs file
-            FtexsFile ftexsFile = new FtexsFile();
+            Dictionary<byte, FtexsFile> ftexsFiles = new Dictionary<byte, FtexsFile>();
+
+            foreach (var mipMapInfo in mipMapInfos)
+            {
+                if (ftexsFiles.ContainsKey(mipMapInfo.FtexsFileNr) == false)
+                {
+                    FtexsFile ftexsFile = new FtexsFile
+                    {
+                        FileNumber = mipMapInfo.FtexsFileNr
+                    };
+                    ftexsFiles.Add(mipMapInfo.FtexsFileNr, ftexsFile);
+                }
+            }
+
             for (int i = 0; i < mipMapInfos.Count; i++)
             {
                 FtexFileMipMapInfo mipMapInfo = mipMapInfos[i];
+                FtexsFile ftexsFile = ftexsFiles[mipMapInfo.FtexsFileNr];
                 byte[] mipMapData = mipMapDatas[i];
                 FtexsFileMipMap ftexsFileMipMap = new FtexsFileMipMap();
                 List<FtexsFileChunk> chunks = GetFtexsChunks(mipMapInfo, mipMapData);
                 ftexsFileMipMap.Chunks.AddRange(chunks);
                 ftexsFile.MipMaps.Add(ftexsFileMipMap);
             }
-            ftexsFiles.Add(ftexsFile);
-            return ftexsFiles;
+            return ftexsFiles.Values.ToList();
         }
+
 
         private static List<FtexsFileChunk> GetFtexsChunks(FtexFileMipMapInfo mipMapInfo, byte[] mipMapData)
         {
@@ -112,14 +125,28 @@ namespace FtexTool
             for (int i = 0; i < levelData.Count; i++)
             {
                 FtexFileMipMapInfo mipMapInfo = new FtexFileMipMapInfo();
-                mipMapInfo.FileSize1 = levelData[i].Length;
-                mipMapInfo.FileSize2 = levelData[i].Length;
+                int fileSize = levelData[i].Length;
+                mipMapInfo.UncompressedFileSize = fileSize;
+                mipMapInfo.CompressedFileSize = fileSize;
                 mipMapInfo.Index = Convert.ToByte(i);
+                mipMapInfo.FtexsFileNr = GetFtexsFileNr(fileSize);
                 mipMapsInfos.Add(mipMapInfo);
             }
             return mipMapsInfos;
         }
-
+        
+        private static byte GetFtexsFileNr(int fileSize)
+        {
+            if (fileSize <= 16384)
+                return 1;
+            if (fileSize <= 65536)
+                return 2;
+            if (fileSize <= 262144)
+                return 3;
+            if (fileSize <= 1048576)
+                return 4;
+            return 5;
+        }
         private static List<byte[]> GetMipMapData(DdsFile file)
         {
             List<byte[]> mipMapDatas = new List<byte[]>();
@@ -136,10 +163,8 @@ namespace FtexTool
                 switch (size)
                 {
                     case 32:
-                        size = 16;
-                        break;
                     case 16:
-                        size = 8;
+                        size = size/2;
                         break;
                     default:
                         size = size/4;

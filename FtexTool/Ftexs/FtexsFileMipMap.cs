@@ -37,25 +37,28 @@ namespace FtexTool.Ftexs
             _chunks = new List<FtexsFileChunk>();
         }
 
-        public static FtexsFileMipMap Read(Stream inputStream, short chunkCount, bool seekOffset)
+        public static FtexsFileMipMap Read(Stream inputStream, short chunkCount, bool absoluteOffset)
         {
             FtexsFileMipMap result = new FtexsFileMipMap();
             for (int i = 0; i < chunkCount; i++)
             {
-                FtexsFileChunk chunk = FtexsFileChunk.Read(inputStream, seekOffset);
+                FtexsFileChunk chunk = FtexsFileChunk.Read(inputStream, absoluteOffset);
                 result.Chunks.Add(chunk);
             }
             return result;
         }
 
-        public void Write(Stream outputStream)
+        public void Write(Stream outputStream, bool absoluteOffset)
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
             long startPosition = writer.BaseStream.Position;
             writer.BaseStream.Position += IndexBlockSize;
             foreach (var chunk in Chunks)
             {
-                chunk.Offset = Convert.ToInt32(writer.BaseStream.Position);
+                if (absoluteOffset)
+                    chunk.Offset = Convert.ToInt32(writer.BaseStream.Position);
+                else
+                    chunk.Offset = 8; // HACK: Offset is only 8 when there are no other chunks
                 chunk.WriteData(outputStream);
             }
             long endPosition = writer.BaseStream.Position;

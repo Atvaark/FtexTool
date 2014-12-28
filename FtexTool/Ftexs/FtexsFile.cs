@@ -12,6 +12,9 @@ namespace FtexTool.Ftexs
             get { return _mipMaps; }
         }
 
+        public byte FileNumber { get; set; }
+
+
         public byte[] Data
         {
             get
@@ -31,15 +34,15 @@ namespace FtexTool.Ftexs
             _mipMaps = new List<FtexsFileMipMap>();
         }
 
-        public static FtexsFile Read(Stream inputStream, byte chunkCount, bool seekOffset)
+        public static FtexsFile Read(Stream inputStream, byte chunkCount, bool absoluteOffset)
         {
             FtexsFile ftexsFile = new FtexsFile();
-            return Read(ftexsFile, inputStream, chunkCount, seekOffset);
+            return Read(ftexsFile, inputStream, chunkCount, absoluteOffset);
         }
 
-        public static FtexsFile Read(FtexsFile ftexsFile, Stream inputStream, short chunkCount, bool seekOffset)
+        public static FtexsFile Read(FtexsFile ftexsFile, Stream inputStream, short chunkCount, bool absoluteOffset)
         {
-            FtexsFileMipMap mipMap = FtexsFileMipMap.Read(inputStream, chunkCount, seekOffset);
+            FtexsFileMipMap mipMap = FtexsFileMipMap.Read(inputStream, chunkCount, absoluteOffset);
             ftexsFile.MipMaps.Add(mipMap);
             return ftexsFile;
         }
@@ -48,7 +51,8 @@ namespace FtexTool.Ftexs
         {
             foreach (var mipMap in MipMaps)
             {
-                mipMap.Write(outputStream);
+                bool absoluteOffset = FileNumber != 1;
+                mipMap.Write(outputStream, absoluteOffset);
             }
         }
     }

@@ -99,7 +99,6 @@ namespace FtexTool.Ftex
 
         public void UpdateOffsets()
         {
-            byte ftexsFileNr = 1;
             int mipMapIndex = 0;
             foreach (var ftexsFile in FtexsFiles)
             {
@@ -108,10 +107,8 @@ namespace FtexTool.Ftex
                     FtexFileMipMapInfo ftexMipMapInfo = MipMapInfos[mipMapIndex];
                     ftexMipMapInfo.ChunkCount = Convert.ToByte(ftexsFileMipMap.Chunks.Count());
                     ftexMipMapInfo.Offset = ftexsFileMipMap.Chunks.First().Offset - ftexsFileMipMap.IndexBlockSize;
-                    ftexMipMapInfo.FtexsFileNr = ftexsFileNr;
                     ++mipMapIndex;
                 }
-                ++ftexsFileNr;
             }
         }
     }

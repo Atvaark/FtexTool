@@ -33,13 +33,13 @@ namespace FtexTool
                     try
                     {
                         UnpackFtexFile(file.FullName);
-                        return;
                     }
                     catch (Exception e)
                     {
                         Debug.WriteLine("Error extracting: " + file.FullName + " " + e);
                     }
                 }
+                return;
             }
             else
             {
@@ -76,15 +76,13 @@ namespace FtexTool
             DdsFile ddsFile = GetDdsFile(filePath);
             FtexFile ftexFile = FtexDdsConverter.ConvertToFtex(ddsFile);
 
-            int ftexsFileNumber = 1;
             foreach (var ftexsFile in ftexFile.FtexsFiles)
             {
-                string ftexsFileName = String.Format("{0}.{1}.ftexs", fileName, ftexsFileNumber);
+                string ftexsFileName = String.Format("{0}.{1}.ftexs", fileName, ftexsFile.FileNumber);
                 string ftexsFilePath = Path.Combine(fileDirectory, ftexsFileName);
 
                 using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Create))
                     ftexsFile.Write(ftexsStream);
-                ++ftexsFileNumber;
             }
 
             // TODO: Calculate the offsets before saving.

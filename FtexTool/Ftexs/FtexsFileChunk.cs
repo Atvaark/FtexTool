@@ -13,7 +13,7 @@ namespace FtexTool.Ftexs
 
         public byte[] ChunkData { get; set; }
 
-        public static FtexsFileChunk Read(Stream inputStream, bool seekOffset)
+        public static FtexsFileChunk Read(Stream inputStream, bool absoluteOffset)
         {
             FtexsFileChunk result = new FtexsFileChunk();
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
@@ -21,17 +21,25 @@ namespace FtexTool.Ftexs
             result.DecompressedCunkSize = reader.ReadInt16();
             result.Offset = reader.ReadInt32();
 
-            long position = reader.BaseStream.Position;
+            long indexEndPosition = reader.BaseStream.Position;
 
-            if (seekOffset)
-                reader.BaseStream.Seek(result.Offset, SeekOrigin.Begin);
+            if (absoluteOffset)
+            {
+                reader.BaseStream.Position = result.Offset;
+            }
+            else
+            {
+                // HACK: result.Offset could be 0x80000008
+                reader.BaseStream.Position = indexEndPosition + (result.Offset & 0xFFFF ) - IndexSize;
+            }
+                
 
             byte[] data = reader.ReadBytes(result.CompressedChunkSize);
             result.ChunkData = result.CompressedChunkSize == result.DecompressedCunkSize
                 ? data
                 : ZipUtility.Inflate(data);
 
-            reader.BaseStream.Seek(position, SeekOrigin.Begin);
+            reader.BaseStream.Position = indexEndPosition;
             return result;
         }
 
