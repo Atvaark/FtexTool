@@ -125,7 +125,7 @@ namespace FtexTool
             List<byte[]> mipMapDatas = new List<byte[]>();
             byte[] data = file.Data;
             int dataOffset = 0;
-            int size = (file.Header.Height*file.Header.Width)/2;
+            int size = file.Header.Height*file.Header.Width;
             for (int i = 0; i < file.Header.MipMapCount; i++)
             {
                 var buffer = new byte[size];
@@ -133,7 +133,18 @@ namespace FtexTool
                 mipMapDatas.Add(buffer);
                 dataOffset += size;
                 // TODO: Check if fox engine works without this hack.
-                size = size == 16 ? 8 : size/4;
+                switch (size)
+                {
+                    case 32:
+                        size = 16;
+                        break;
+                    case 16:
+                        size = 8;
+                        break;
+                    default:
+                        size = size/4;
+                        break;
+                }
             }
             return mipMapDatas;
         }
