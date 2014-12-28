@@ -33,6 +33,7 @@ namespace FtexTool
                     try
                     {
                         UnpackFtexFile(file.FullName);
+                        return;
                     }
                     catch (Exception e)
                     {
@@ -50,6 +51,7 @@ namespace FtexTool
                 if (path.EndsWith(".dds"))
                 {
                     PackDdsFile(path);
+                    return;
                 }
             }
             ShowUsageInfo();
@@ -63,7 +65,7 @@ namespace FtexTool
                               "Usage:\n" +
                               "  FtexTool.exe directory -Unpacks every ftex file in the directory\n" +
                               "  FtexTool.exe file.ftex -Unpacks a single ftex file\n" +
-                              "  FtexTool.exe file.dds  -Packs a single dds file\n");
+                              "  FtexTool.exe file.dds  -Packs a single dds file");
         }
 
         private static void PackDdsFile(string filePath)
@@ -110,8 +112,6 @@ namespace FtexTool
 
             FtexFile ftexFile = GetFtexFile(filePath);
             DdsFile ddsFile = FtexDdsConverter.ConvertToDds(ftexFile);
-
-            LogFtexFileValues(filePath, ftexFile);
 
             string ddsFileName = String.Format("{0}.dds", fileName);
             string ddsFilePath = Path.Combine(fileDirectory, ddsFileName);
@@ -175,46 +175,6 @@ namespace FtexTool
             }
             files.AddRange(fileDirectory.GetFiles().Where(f => f.Extension == extension));
             return files;
-        }
-
-        private static void LogFtexFileValues(string filePath, FtexFile ftexFile)
-        {
-            using (FileStream log = new FileStream("E:\\loggw.csv", FileMode.Append))
-            {
-                StreamWriter sw = new StreamWriter(log, Encoding.Default);
-
-                string s = "";
-                s += filePath;
-                s += ";";
-                s += ftexFile.Height;
-                s += ";";
-                s += ftexFile.Width;
-                s += ";";
-                s += ftexFile.DtxType;
-                s += ";";
-                s += ftexFile.FtexsFileCount;
-                s += ";";
-                s += ftexFile.MipMapCount;
-                s += ";";
-                s += ftexFile.UnknownCount;
-                s += ";";
-
-
-                foreach (var ftexFileMipMap in ftexFile.MipMapInfos)
-                {
-                    s += ";";
-                    s += ftexFileMipMap.FtexsFileNr;
-                    s += ";";
-                    s += ftexFileMipMap.FileSize1;
-                    s += ";";
-                    s += ftexFileMipMap.FileSize2;
-                    s += ";";
-                    s += ftexFileMipMap.ChunkCount;
-                    s += ";";
-                }
-                sw.WriteLine(s);
-                sw.Flush();
-            }
         }
     }
 }
