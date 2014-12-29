@@ -19,9 +19,9 @@ namespace FtexTool.Ftex
         public short Height { get; set; }
         public byte MipMapCount { get; set; }
         public byte FtexsFileCount { get; set; }
-
         // FtexsFileCount - 1
         public byte UnknownCount { get; set; }
+        public byte[] Hash { get; set; }
 
         public IEnumerable<FtexFileMipMapInfo> MipMapInfos
         {
@@ -51,6 +51,7 @@ namespace FtexTool.Ftex
         {
             _ftexsFiles = new Dictionary<int, FtexsFile>();
             _mipMapInfos = new List<FtexFileMipMapInfo>();
+            Hash = new byte[16];
         }
 
         public void AddFtexsFile(FtexsFile ftexsFile)
@@ -90,7 +91,8 @@ namespace FtexTool.Ftex
             reader.Skip(15);
             FtexsFileCount = reader.ReadByte();
             UnknownCount = reader.ReadByte();
-            reader.Skip(30);
+            reader.Skip(14);
+            Hash = reader.ReadBytes(16);
 
             for (int i = 0; i < MipMapCount; i++)
             {
@@ -124,7 +126,8 @@ namespace FtexTool.Ftex
             writer.WriteZeros(15);
             writer.Write(FtexsFileCount);
             writer.Write(UnknownCount);
-            writer.WriteZeros(30);
+            writer.WriteZeros(14);
+            writer.Write(Hash);
             foreach (var mipMap in MipMapInfos)
             {
                 mipMap.Write(outputStream);
