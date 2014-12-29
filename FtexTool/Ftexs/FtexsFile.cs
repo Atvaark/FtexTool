@@ -49,8 +49,10 @@ namespace FtexTool.Ftexs
 
         public void Write(Stream outputStream)
         {
-            foreach (var mipMap in MipMaps)
+            // HACK: Save the mipmaps in ascending order 
+            for (int i = MipMaps.Count - 1; i >= 0; i--)
             {
+                FtexsFileMipMap mipMap = MipMaps[i];
                 bool absoluteOffset = FileNumber != 1;
                 mipMap.Write(outputStream, absoluteOffset);
             }
