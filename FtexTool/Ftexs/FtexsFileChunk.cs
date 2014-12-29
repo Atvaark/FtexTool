@@ -6,6 +6,7 @@ namespace FtexTool.Ftexs
     public class FtexsFileChunk
     {
         public const int IndexSize = 8;
+        private const int OffsetBitMask = 0xFFFF;
 
         public short CompressedChunkSize { get; set; }
         public short DecompressedChunkSize { get; set; }
@@ -13,34 +14,38 @@ namespace FtexTool.Ftexs
 
         public byte[] ChunkData { get; set; }
 
-        public static FtexsFileChunk Read(Stream inputStream, bool absoluteOffset)
+        public static FtexsFileChunk ReadFtexsFileChunk(Stream inputStream, bool absoluteOffset)
         {
             FtexsFileChunk result = new FtexsFileChunk();
+            result.Read(inputStream, absoluteOffset);
+            return result;
+        }
+
+        public void Read(Stream inputStream, bool absoluteOffset)
+        {
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
-            result.CompressedChunkSize = reader.ReadInt16();
-            result.DecompressedChunkSize = reader.ReadInt16();
-            result.Offset = reader.ReadInt32();
+            CompressedChunkSize = reader.ReadInt16();
+            DecompressedChunkSize = reader.ReadInt16();
+            Offset = reader.ReadInt32();
 
             long indexEndPosition = reader.BaseStream.Position;
 
             if (absoluteOffset)
             {
-                reader.BaseStream.Position = result.Offset;
+                reader.BaseStream.Position = Offset;
             }
             else
             {
                 // HACK: result.Offset could be 0x80000008
-                reader.BaseStream.Position = indexEndPosition + (result.Offset & 0xFFFF ) - IndexSize;
+                reader.BaseStream.Position = indexEndPosition + (Offset & OffsetBitMask ) - IndexSize;
             }
-                
 
-            byte[] data = reader.ReadBytes(result.CompressedChunkSize);
-            result.ChunkData = result.CompressedChunkSize == result.DecompressedChunkSize
+            byte[] data = reader.ReadBytes(CompressedChunkSize);
+            ChunkData = CompressedChunkSize == DecompressedChunkSize
                 ? data
                 : ZipUtility.Inflate(data);
 
             reader.BaseStream.Position = indexEndPosition;
-            return result;
         }
 
         public void Write(Stream outputStream)

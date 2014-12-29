@@ -62,8 +62,8 @@ namespace FtexTool
             var mipMaps = GetMipMapInfos(mipMapData);
             var ftexsFiles = GetFtexsFiles(mipMaps, mipMapData);
 
-            result.MipMapInfos.AddRange(mipMaps);
-            result.FtexsFiles.AddRange(ftexsFiles);
+            result.AddMipMapInfos(mipMaps);
+            result.AddFtexsFiles(ftexsFiles);
             result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count());
             return result;
         }
@@ -74,25 +74,25 @@ namespace FtexTool
 
             foreach (var mipMapInfo in mipMapInfos)
             {
-                if (ftexsFiles.ContainsKey(mipMapInfo.FtexsFileNr) == false)
+                if (ftexsFiles.ContainsKey(mipMapInfo.FtexsFileNumber) == false)
                 {
                     FtexsFile ftexsFile = new FtexsFile
                     {
-                        FileNumber = mipMapInfo.FtexsFileNr
+                        FileNumber = mipMapInfo.FtexsFileNumber
                     };
-                    ftexsFiles.Add(mipMapInfo.FtexsFileNr, ftexsFile);
+                    ftexsFiles.Add(mipMapInfo.FtexsFileNumber, ftexsFile);
                 }
             }
 
             for (int i = 0; i < mipMapInfos.Count; i++)
             {
                 FtexFileMipMapInfo mipMapInfo = mipMapInfos[i];
-                FtexsFile ftexsFile = ftexsFiles[mipMapInfo.FtexsFileNr];
+                FtexsFile ftexsFile = ftexsFiles[mipMapInfo.FtexsFileNumber];
                 byte[] mipMapData = mipMapDatas[i];
                 FtexsFileMipMap ftexsFileMipMap = new FtexsFileMipMap();
                 List<FtexsFileChunk> chunks = GetFtexsChunks(mipMapInfo, mipMapData);
-                ftexsFileMipMap.Chunks.AddRange(chunks);
-                ftexsFile.MipMaps.Add(ftexsFileMipMap);
+                ftexsFileMipMap.AddChunks(chunks);
+                ftexsFile.AddMipMap(ftexsFileMipMap);
             }
             return ftexsFiles.Values.ToList();
         }
@@ -129,7 +129,7 @@ namespace FtexTool
                 mipMapInfo.DecompressedFileSize = fileSize;
                 mipMapInfo.DecompressedFileSize = fileSize;
                 mipMapInfo.Index = Convert.ToByte(i);
-                mipMapInfo.FtexsFileNr = GetFtexsFileNr(fileSize);
+                mipMapInfo.FtexsFileNumber = GetFtexsFileNr(fileSize);
                 mipMapsInfos.Add(mipMapInfo);
             }
             return mipMapsInfos;

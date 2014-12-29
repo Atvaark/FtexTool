@@ -12,7 +12,7 @@ namespace FtexTool.Ftex
         private const long MagicNumber = 4612226451348214854; // FTEX 85 EB 01 40
 
         private readonly List<FtexFileMipMapInfo> _mipMapInfos;
-        private readonly List<FtexsFile> _ftexsFiles;
+        private readonly Dictionary<int, FtexsFile> _ftexsFiles;
 
         public short DtxType { get; set; }
         public short Width { get; set; }
@@ -23,14 +23,14 @@ namespace FtexTool.Ftex
         // FtexsFileCount - 1
         public byte UnknownCount { get; set; }
 
-        public List<FtexFileMipMapInfo> MipMapInfos
+        public IEnumerable<FtexFileMipMapInfo> MipMapInfos
         {
             get { return _mipMapInfos; }
         }
 
-        public List<FtexsFile> FtexsFiles
+        public IEnumerable<FtexsFile> FtexsFiles
         {
-            get { return _ftexsFiles; }
+            get { return _ftexsFiles.Values; }
         }
 
         public byte[] Data
@@ -38,9 +38,8 @@ namespace FtexTool.Ftex
             get
             {
                 MemoryStream stream = new MemoryStream();
-                for (int i = FtexsFiles.Count - 1; i >= 0; i--)
+                foreach (var ftexsFile in FtexsFiles.Reverse())
                 {
-                    FtexsFile ftexsFile = FtexsFiles[i];
                     byte[] ftexsFileData = ftexsFile.Data;
                     stream.Write(ftexsFileData, 0, ftexsFileData.Length);
                 }
@@ -50,32 +49,67 @@ namespace FtexTool.Ftex
 
         public FtexFile()
         {
-            _ftexsFiles = new List<FtexsFile>();
+            _ftexsFiles = new Dictionary<int, FtexsFile>();
             _mipMapInfos = new List<FtexFileMipMapInfo>();
         }
 
-        public static FtexFile Read(Stream inputStream)
+        public void AddFtexsFile(FtexsFile ftexsFile)
+        {
+            _ftexsFiles.Add(ftexsFile.FileNumber, ftexsFile);
+        }
+
+        public void AddFtexsFiles(IEnumerable<FtexsFile> ftexsFiles)
+        {
+            foreach (var ftexsFile in ftexsFiles)
+            {
+                AddFtexsFile(ftexsFile);
+            }
+        }
+
+        public bool TryGetFtexsFile(int fileNumber, out FtexsFile ftexsFile)
+        {
+            return  _ftexsFiles.TryGetValue(fileNumber, out ftexsFile);
+        }
+
+        public static FtexFile ReadFtexFile(Stream inputStream)
         {
             FtexFile result = new FtexFile();
+            result.Read(inputStream);
+            return result;
+        }
+
+        private void Read(Stream inputStream)
+        {
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
             reader.Assert(MagicNumber);
-            result.DtxType = reader.ReadInt16();
-            result.Width = reader.ReadInt16();
-            result.Height = reader.ReadInt16();
+            DtxType = reader.ReadInt16();
+            Width = reader.ReadInt16();
+            Height = reader.ReadInt16();
             reader.Skip(2);
-            result.MipMapCount = reader.ReadByte();
+            MipMapCount = reader.ReadByte();
             reader.Skip(15);
-            result.FtexsFileCount = reader.ReadByte();
-            result.UnknownCount = reader.ReadByte();
+            FtexsFileCount = reader.ReadByte();
+            UnknownCount = reader.ReadByte();
             reader.Skip(30);
 
-            for (int i = 0; i < result.MipMapCount; i++)
+            for (int i = 0; i < MipMapCount; i++)
             {
-                FtexFileMipMapInfo fileMipMapInfo = FtexFileMipMapInfo.Read(inputStream);
-                result.MipMapInfos.Add(fileMipMapInfo);
+                FtexFileMipMapInfo fileMipMapInfo = FtexFileMipMapInfo.ReadFtexFileMipMapInfo(inputStream);
+                AddMipMapInfo(fileMipMapInfo);
             }
+        }
 
-            return result;
+        private void AddMipMapInfo(FtexFileMipMapInfo fileMipMapInfo)
+        {
+            _mipMapInfos.Add(fileMipMapInfo);
+        }
+
+        public void AddMipMapInfos(IEnumerable<FtexFileMipMapInfo> mipMapInfos)
+        {
+            foreach (var mipMapInfo in mipMapInfos)
+            {
+                AddMipMapInfo(mipMapInfo);
+            }
         }
 
         public void Write(Stream outputStream)
@@ -104,14 +138,13 @@ namespace FtexTool.Ftex
             {
                 foreach (var ftexsFileMipMap in ftexsFile.MipMaps)
                 {
-                    FtexFileMipMapInfo ftexMipMapInfo = MipMapInfos[mipMapIndex];
+                    FtexFileMipMapInfo ftexMipMapInfo = MipMapInfos.ElementAt(mipMapIndex);
                     ftexMipMapInfo.ChunkCount = Convert.ToByte(ftexsFileMipMap.Chunks.Count());
-
-                    // BUG: FtexFileMipMapInfos in file 1 do not have info about absolute offsets. 
-                    ftexMipMapInfo.Offset = ftexsFileMipMap.Chunks.First().Offset - ftexsFileMipMap.IndexBlockSize;
+                    ftexMipMapInfo.Offset = ftexsFileMipMap.Offset;
                     ++mipMapIndex;
                 }
             }
         }
+
     }
 }

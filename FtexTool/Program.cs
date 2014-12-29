@@ -128,32 +128,32 @@ namespace FtexTool
             FtexFile ftexFile;
             using (FileStream ftexStream = new FileStream(filePath, FileMode.Open))
             {
-                ftexFile = FtexFile.Read(ftexStream);
+                ftexFile = FtexFile.ReadFtexFile(ftexStream);
             }
 
-            for (int i = 0; i < ftexFile.FtexsFileCount; i++)
+            for (byte fileNumber = 1; fileNumber <= ftexFile.FtexsFileCount; fileNumber++)
             {
-                ftexFile.FtexsFiles.Add(new FtexsFile());
+                FtexsFile ftexsFile = FtexsFileFactory.CreateFtexsFile(fileNumber);
+                ftexFile.AddFtexsFile(ftexsFile);
             }
 
-            for (int i = 0; i < ftexFile.MipMapCount; i++)
+            foreach (var mipMapInfo in ftexFile.MipMapInfos)
             {
-                FtexFileMipMapInfo fileMipMapInfo = ftexFile.MipMapInfos[i];
-
-                string ftexsName = String.Format("{0}.{1}.ftexs", fileName, fileMipMapInfo.FtexsFileNr);
+                string ftexsName = String.Format("{0}.{1}.ftexs", fileName, mipMapInfo.FtexsFileNumber);
                 string ftexsFilePath = Path.Combine(fileDirectory, ftexsName);
                 using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Open))
                 {
-                    ftexsStream.Position = fileMipMapInfo.Offset;
-                    FtexsFile ftexsFile = ftexFile.FtexsFiles[fileMipMapInfo.FtexsFileNr - 1];
+                    ftexsStream.Position = mipMapInfo.Offset;
+                    FtexsFile ftexsFile;
+                    ftexFile.TryGetFtexsFile(mipMapInfo.FtexsFileNumber, out ftexsFile);
 
-                    if (fileMipMapInfo.FtexsFileNr == 1)
+                    if (mipMapInfo.FtexsFileNumber == 1)
                     {
-                        FtexsFile.Read(ftexsFile, ftexsStream, fileMipMapInfo.ChunkCount, false);
+                        ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount, false);
                     }
                     else
                     {
-                        FtexsFile.Read(ftexsFile, ftexsStream, fileMipMapInfo.ChunkCount, true);
+                        ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount, true);
                     }
                 }
             }

@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace FtexTool.Ftexs
 {
     public class FtexsFileMipMap
     {
+        private const int DefaultRelativeOffset = 8;
         private readonly List<FtexsFileChunk> _chunks;
 
-        public List<FtexsFileChunk> Chunks
+        public IEnumerable<FtexsFileChunk> Chunks
         {
             get { return _chunks; }
         }
@@ -29,7 +31,16 @@ namespace FtexTool.Ftexs
 
         internal int IndexBlockSize
         {
-            get { return FtexsFileChunk.IndexSize*Chunks.Count; }
+            get { return FtexsFileChunk.IndexSize * _chunks.Count; }
+        }
+
+        public int Offset
+        {
+            get
+            {
+                // BUG: FtexFileMipMapInfos in file 1 do not have info about absolute offsets. 
+                return Chunks.Any() ? Chunks.First().Offset - IndexBlockSize : 0;
+            }
         }
 
         public FtexsFileMipMap()
@@ -37,15 +48,34 @@ namespace FtexTool.Ftexs
             _chunks = new List<FtexsFileChunk>();
         }
 
-        public static FtexsFileMipMap Read(Stream inputStream, short chunkCount, bool absoluteOffset)
+        public static FtexsFileMipMap ReadFtexsFileMipMap(Stream inputStream, short chunkCount, bool absoluteOffset)
         {
             FtexsFileMipMap result = new FtexsFileMipMap();
+            result.Read(inputStream, chunkCount, absoluteOffset);
+            return result;
+        }
+
+        public void Read(Stream inputStream, short chunkCount, bool absoluteOffset)
+        {
             for (int i = 0; i < chunkCount; i++)
             {
-                FtexsFileChunk chunk = FtexsFileChunk.Read(inputStream, absoluteOffset);
-                result.Chunks.Add(chunk);
+                FtexsFileChunk chunk = FtexsFileChunk.ReadFtexsFileChunk(inputStream, absoluteOffset);
+                AddChunk(chunk);
+
             }
-            return result;
+
+        }
+
+        public void AddChunk(FtexsFileChunk chunk)
+        {
+            _chunks.Add(chunk);
+        }
+        public void AddChunks(IEnumerable<FtexsFileChunk> chunks)
+        {
+            foreach (var chunk in chunks)
+            {
+                AddChunk(chunk);
+            }
         }
 
         public void Write(Stream outputStream, bool absoluteOffset)
@@ -58,7 +88,8 @@ namespace FtexTool.Ftexs
                 if (absoluteOffset)
                     chunk.Offset = Convert.ToInt32(writer.BaseStream.Position);
                 else
-                    chunk.Offset = 8; // HACK: Offset is only 8 when there are no other chunks
+                    // HACK: Offset is only 8 when there are no other chunks. Offset is 0x80000008 when it's the smallest mipmap.
+                    chunk.Offset = DefaultRelativeOffset; 
                 chunk.WriteData(outputStream);
             }
             long endPosition = writer.BaseStream.Position;
@@ -69,5 +100,6 @@ namespace FtexTool.Ftexs
             }
             writer.BaseStream.Position = endPosition;
         }
+
     }
 }

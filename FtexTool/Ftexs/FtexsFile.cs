@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
 
 namespace FtexTool.Ftexs
 {
@@ -7,14 +9,13 @@ namespace FtexTool.Ftexs
     {
         private readonly List<FtexsFileMipMap> _mipMaps;
 
-        public List<FtexsFileMipMap> MipMaps
+        public IEnumerable<FtexsFileMipMap> MipMaps
         {
             get { return _mipMaps; }
         }
 
         public byte FileNumber { get; set; }
-
-
+        
         public byte[] Data
         {
             get
@@ -33,26 +34,23 @@ namespace FtexTool.Ftexs
         {
             _mipMaps = new List<FtexsFileMipMap>();
         }
-
-        public static FtexsFile Read(Stream inputStream, byte chunkCount, bool absoluteOffset)
+        
+        public void Read(Stream inputStream, short chunkCount, bool absoluteOffset)
         {
-            FtexsFile ftexsFile = new FtexsFile();
-            return Read(ftexsFile, inputStream, chunkCount, absoluteOffset);
+            FtexsFileMipMap mipMap = FtexsFileMipMap.ReadFtexsFileMipMap(inputStream, chunkCount, absoluteOffset);
+            AddMipMap(mipMap);
         }
 
-        public static FtexsFile Read(FtexsFile ftexsFile, Stream inputStream, short chunkCount, bool absoluteOffset)
+        public void AddMipMap(FtexsFileMipMap mipMap)
         {
-            FtexsFileMipMap mipMap = FtexsFileMipMap.Read(inputStream, chunkCount, absoluteOffset);
-            ftexsFile.MipMaps.Add(mipMap);
-            return ftexsFile;
+            _mipMaps.Add(mipMap);
         }
 
         public void Write(Stream outputStream)
         {
             // HACK: Save the mipmaps in ascending order 
-            for (int i = MipMaps.Count - 1; i >= 0; i--)
+            foreach (var mipMap in MipMaps.Reverse())
             {
-                FtexsFileMipMap mipMap = MipMaps[i];
                 bool absoluteOffset = FileNumber != 1;
                 mipMap.Write(outputStream, absoluteOffset);
             }
