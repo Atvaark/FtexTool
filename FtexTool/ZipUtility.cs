@@ -15,10 +15,11 @@ namespace FtexTool
 
         internal static byte[] Deflate(byte[] buffer)
         {
-            DeflaterOutputStream deflaterStream = new DeflaterOutputStream(new MemoryStream(buffer));
-            MemoryStream outputStream = new MemoryStream();
-            deflaterStream.CopyTo(outputStream);
-            return outputStream.ToArray();
+            MemoryStream compressedBufferStream = new MemoryStream();
+            DeflaterOutputStream deflaterStream = new DeflaterOutputStream(compressedBufferStream);
+            deflaterStream.Write(buffer, 0, buffer.Length);
+            deflaterStream.Close();
+            return compressedBufferStream.ToArray();
         }
     }
 }

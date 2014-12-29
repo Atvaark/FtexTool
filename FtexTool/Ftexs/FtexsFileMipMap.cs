@@ -9,6 +9,7 @@ namespace FtexTool.Ftexs
     public class FtexsFileMipMap
     {
         private const int DefaultRelativeOffset = 8;
+        private const uint UncompressedFlag = 0x80000000;
         private readonly List<FtexsFileChunk> _chunks;
 
         public IEnumerable<FtexsFileChunk> Chunks
@@ -26,6 +27,14 @@ namespace FtexTool.Ftexs
                     stream.Write(chunk.ChunkData, 0, chunk.ChunkData.Length);
                 }
                 return stream.ToArray();
+            }
+        }
+
+        public int CompressedDataSize
+        {
+            get
+            {
+                return Chunks.Sum(chunk => chunk.CompressedChunkSize);
             }
         }
 
@@ -80,10 +89,15 @@ namespace FtexTool.Ftexs
             foreach (var chunk in Chunks)
             {
                 if (absoluteOffset)
-                    chunk.Offset = Convert.ToInt32(writer.BaseStream.Position);
+                {
+                    chunk.Offset = Convert.ToUInt32(writer.BaseStream.Position);
+                }
                 else
-                    // HACK: Offset is only 8 when there are no other chunks. Offset is 0x80000008 when it's the smallest mipmap.
-                    chunk.Offset = DefaultRelativeOffset; 
+                {
+                    chunk.Offset = DefaultRelativeOffset;
+                    if (chunk.CompressedChunkSize == chunk.DecompressedChunkSize)
+                        chunk.Offset = chunk.Offset | UncompressedFlag;
+                }
                 chunk.WriteData(outputStream);
             }
             long endPosition = writer.BaseStream.Position;

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 namespace FtexTool.Ftexs
@@ -10,7 +11,7 @@ namespace FtexTool.Ftexs
 
         public short CompressedChunkSize { get; set; }
         public short DecompressedChunkSize { get; set; }
-        public int Offset { get; set; }
+        public uint Offset { get; set; }
 
         public byte[] ChunkData { get; set; }
 
@@ -26,7 +27,7 @@ namespace FtexTool.Ftexs
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
             CompressedChunkSize = reader.ReadInt16();
             DecompressedChunkSize = reader.ReadInt16();
-            Offset = reader.ReadInt32();
+            Offset = reader.ReadUInt32();
 
             long indexEndPosition = reader.BaseStream.Position;
 
@@ -59,7 +60,9 @@ namespace FtexTool.Ftexs
         public void WriteData(Stream outputStream)
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
-            writer.Write(ChunkData);
+            byte[] data = ZipUtility.Deflate(ChunkData);
+            CompressedChunkSize = Convert.ToInt16(data.Length);
+            writer.Write(data);
         }
     }
 }

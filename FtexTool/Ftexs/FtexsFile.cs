@@ -29,6 +29,14 @@ namespace FtexTool.Ftexs
             }
         }
 
+        public int CompressedDataSize
+        {
+            get
+            {
+                return MipMaps.Sum(mipMap => mipMap.CompressedDataSize);
+            }
+        }
+
 
         public FtexsFile()
         {

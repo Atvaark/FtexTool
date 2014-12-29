@@ -127,7 +127,6 @@ namespace FtexTool
                 FtexFileMipMapInfo mipMapInfo = new FtexFileMipMapInfo();
                 int fileSize = levelData[i].Length;
                 mipMapInfo.DecompressedFileSize = fileSize;
-                mipMapInfo.DecompressedFileSize = fileSize;
                 mipMapInfo.Index = Convert.ToByte(i);
                 mipMapInfo.FtexsFileNumber = GetFtexsFileNr(fileSize);
                 mipMapsInfos.Add(mipMapInfo);
