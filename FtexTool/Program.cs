@@ -128,7 +128,10 @@ namespace FtexTool
 
             for (byte fileNumber = 1; fileNumber <= ftexFile.FtexsFileCount; fileNumber++)
             {
-                FtexsFile ftexsFile = FtexsFileFactory.CreateFtexsFile(fileNumber);
+                FtexsFile ftexsFile = new FtexsFile
+                {
+                    FileNumber = fileNumber
+                };
                 ftexFile.AddFtexsFile(ftexsFile);
             }
 
@@ -141,15 +144,7 @@ namespace FtexTool
                     ftexsStream.Position = mipMapInfo.Offset;
                     FtexsFile ftexsFile;
                     ftexFile.TryGetFtexsFile(mipMapInfo.FtexsFileNumber, out ftexsFile);
-
-                    if (mipMapInfo.FtexsFileNumber == 1)
-                    {
-                        ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount, false);
-                    }
-                    else
-                    {
-                        ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount, true);
-                    }
+                    ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount);
                 }
             }
             return ftexFile;

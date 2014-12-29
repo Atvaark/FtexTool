@@ -59,7 +59,6 @@
     <Compile Include="Dds\DdsPixelFormat.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="FtexDdsConverter.cs" />
-    <Compile Include="Ftexs\FtexsFileFactory.cs" />
     <Compile Include="Ftexs\FtexsFileMipMap.cs" />
     <Compile Include="Ftex\FtexFile.cs" />
     <Compile Include="Ftex\FtexFileMipMapInfo.cs" />

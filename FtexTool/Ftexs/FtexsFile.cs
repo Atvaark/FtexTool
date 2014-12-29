@@ -38,9 +38,9 @@ namespace FtexTool.Ftexs
             get { return MipMaps.Sum(mipMap => mipMap.CompressedDataSize); }
         }
 
-        public void Read(Stream inputStream, short chunkCount, bool absoluteOffset)
+        public void Read(Stream inputStream, short chunkCount)
         {
-            FtexsFileMipMap mipMap = FtexsFileMipMap.ReadFtexsFileMipMap(inputStream, chunkCount, absoluteOffset);
+            FtexsFileMipMap mipMap = FtexsFileMipMap.ReadFtexsFileMipMap(inputStream, chunkCount);
             AddMipMap(mipMap);
         }
 
@@ -51,11 +51,9 @@ namespace FtexTool.Ftexs
 
         public void Write(Stream outputStream)
         {
-            // HACK: Save the mipmaps in ascending order 
             foreach (var mipMap in MipMaps.Reverse())
             {
-                bool absoluteOffset = FileNumber != 1;
-                mipMap.Write(outputStream, absoluteOffset);
+                mipMap.Write(outputStream);
             }
         }
     }
