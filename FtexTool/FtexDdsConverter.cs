@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using FtexTool.Dds;
 using FtexTool.Dds.Enum;
 using FtexTool.Ftex;
@@ -95,7 +94,6 @@ namespace FtexTool
             }
             return ftexsFiles.Values.ToList();
         }
-
 
         private static List<FtexsFileChunk> GetFtexsChunks(FtexFileMipMapInfo mipMapInfo, byte[] mipMapData)
         {

@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace FtexTool.Exceptions
 {
     [Serializable]
-    public class AssertionFailedException : System.Exception
+    public class AssertionFailedException : Exception
     {
         public AssertionFailedException()
         {
@@ -18,7 +18,7 @@ namespace FtexTool.Exceptions
         {
         }
 
-        public AssertionFailedException(string message, System.Exception innerException) : base(message, innerException)
+        public AssertionFailedException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

@@ -38,7 +38,6 @@ namespace FtexTool
             return Marshal.SizeOf(type);
         }
 
-
         private static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
             GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);

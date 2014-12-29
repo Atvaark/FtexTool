@@ -14,8 +14,6 @@ namespace FtexTool.Dds
         internal const int Dtx4FourCc = 0x34545844;
         internal const int Dtx5FourCc = 0x35545844;
         internal const int Dx10FourCc = 0x30315844;
-
-
         public int Size { get; set; }
         public DdsPixelFormatFlag Flags { get; set; }
         public int FourCc { get; set; }
@@ -52,7 +50,6 @@ namespace FtexTool.Dds
             writer.Write(BBitMask);
             writer.Write(ABitMask);
         }
-
 
         public static DdsPixelFormat DdsPfDxt1()
         {

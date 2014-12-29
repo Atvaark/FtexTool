@@ -8,11 +8,9 @@ namespace FtexTool.Ftexs
     {
         public const int IndexSize = 8;
         private const int OffsetBitMask = 0xFFFF;
-
         public short CompressedChunkSize { get; set; }
         public short DecompressedChunkSize { get; set; }
         public uint Offset { get; set; }
-
         public byte[] ChunkData { get; set; }
 
         public static FtexsFileChunk ReadFtexsFileChunk(Stream inputStream, bool absoluteOffset)

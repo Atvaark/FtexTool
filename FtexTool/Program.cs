@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using FtexTool.Dds;
 using FtexTool.Ftex;
 using FtexTool.Ftexs;
@@ -41,18 +39,15 @@ namespace FtexTool
                 }
                 return;
             }
-            else
+            if (path.EndsWith(".ftex"))
             {
-                if (path.EndsWith(".ftex"))
-                {
-                    UnpackFtexFile(path);
-                    return;
-                }
-                if (path.EndsWith(".dds"))
-                {
-                    PackDdsFile(path);
-                    return;
-                }
+                UnpackFtexFile(path);
+                return;
+            }
+            if (path.EndsWith(".dds"))
+            {
+                PackDdsFile(path);
+                return;
             }
             ShowUsageInfo();
         }
@@ -159,7 +154,6 @@ namespace FtexTool
             }
             return ftexFile;
         }
-
 
         private static List<FileInfo> GetFileList(DirectoryInfo fileDirectory, bool recursively, string extension)
         {

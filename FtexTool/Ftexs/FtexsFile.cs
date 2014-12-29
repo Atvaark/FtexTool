@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 
@@ -8,6 +7,11 @@ namespace FtexTool.Ftexs
     public class FtexsFile
     {
         private readonly List<FtexsFileMipMap> _mipMaps;
+
+        public FtexsFile()
+        {
+            _mipMaps = new List<FtexsFileMipMap>();
+        }
 
         public IEnumerable<FtexsFileMipMap> MipMaps
         {
@@ -32,12 +36,6 @@ namespace FtexTool.Ftexs
         public int CompressedDataSize
         {
             get { return MipMaps.Sum(mipMap => mipMap.CompressedDataSize); }
-        }
-
-
-        public FtexsFile()
-        {
-            _mipMaps = new List<FtexsFileMipMap>();
         }
 
         public void Read(Stream inputStream, short chunkCount, bool absoluteOffset)

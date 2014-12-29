@@ -12,7 +12,6 @@ namespace FtexTool.Dds
         private uint MiscFlag { get; set; }
         private uint ArraySize { get; set; }
 
-
         public static DdsFileHeaderDx10 Read(Stream inputStream)
         {
             DdsFileHeaderDx10 result = new DdsFileHeaderDx10();

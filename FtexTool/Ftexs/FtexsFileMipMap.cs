@@ -12,6 +12,11 @@ namespace FtexTool.Ftexs
         private const uint UncompressedFlag = 0x80000000;
         private readonly List<FtexsFileChunk> _chunks;
 
+        public FtexsFileMipMap()
+        {
+            _chunks = new List<FtexsFileChunk>();
+        }
+
         public IEnumerable<FtexsFileChunk> Chunks
         {
             get { return _chunks; }
@@ -41,11 +46,6 @@ namespace FtexTool.Ftexs
         }
 
         public int Offset { get; set; }
-
-        public FtexsFileMipMap()
-        {
-            _chunks = new List<FtexsFileChunk>();
-        }
 
         public static FtexsFileMipMap ReadFtexsFileMipMap(Stream inputStream, short chunkCount, bool absoluteOffset)
         {

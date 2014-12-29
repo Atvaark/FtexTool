@@ -10,9 +10,15 @@ namespace FtexTool.Ftex
     public class FtexFile
     {
         private const long MagicNumber = 4612226451348214854; // FTEX 85 EB 01 40
-
-        private readonly List<FtexFileMipMapInfo> _mipMapInfos;
         private readonly Dictionary<int, FtexsFile> _ftexsFiles;
+        private readonly List<FtexFileMipMapInfo> _mipMapInfos;
+
+        public FtexFile()
+        {
+            _ftexsFiles = new Dictionary<int, FtexsFile>();
+            _mipMapInfos = new List<FtexFileMipMapInfo>();
+            Hash = new byte[16];
+        }
 
         public short DtxType { get; set; }
         public short Width { get; set; }
@@ -45,13 +51,6 @@ namespace FtexTool.Ftex
                 }
                 return stream.ToArray();
             }
-        }
-
-        public FtexFile()
-        {
-            _ftexsFiles = new Dictionary<int, FtexsFile>();
-            _mipMapInfos = new List<FtexFileMipMapInfo>();
-            Hash = new byte[16];
         }
 
         public void AddFtexsFile(FtexsFile ftexsFile)
