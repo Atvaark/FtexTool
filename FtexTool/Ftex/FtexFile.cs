@@ -106,6 +106,8 @@ namespace FtexTool.Ftex
                 {
                     FtexFileMipMapInfo ftexMipMapInfo = MipMapInfos[mipMapIndex];
                     ftexMipMapInfo.ChunkCount = Convert.ToByte(ftexsFileMipMap.Chunks.Count());
+
+                    // BUG: FtexFileMipMapInfos in file 1 do not have info about absolute offsets. 
                     ftexMipMapInfo.Offset = ftexsFileMipMap.Chunks.First().Offset - ftexsFileMipMap.IndexBlockSize;
                     ++mipMapIndex;
                 }

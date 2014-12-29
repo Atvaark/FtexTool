@@ -7,7 +7,7 @@ namespace FtexTool.Ftex
     public class FtexFileMipMapInfo
     {
         public int Offset { get; set; }
-        public int UncompressedFileSize { get; set; }
+        public int DecompressedFileSize { get; set; }
         public int CompressedFileSize { get; set; }
         public byte Index { get; set; }
         public byte FtexsFileNr { get; set; }
@@ -18,7 +18,7 @@ namespace FtexTool.Ftex
             FtexFileMipMapInfo result = new FtexFileMipMapInfo();
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
             result.Offset = reader.ReadInt32();
-            result.UncompressedFileSize = reader.ReadInt32();
+            result.DecompressedFileSize = reader.ReadInt32();
             result.CompressedFileSize = reader.ReadInt32();
             result.Index = reader.ReadByte();
             result.FtexsFileNr = reader.ReadByte();
@@ -30,7 +30,7 @@ namespace FtexTool.Ftex
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
             writer.Write(Offset);
-            writer.Write(UncompressedFileSize);
+            writer.Write(DecompressedFileSize);
             writer.Write(CompressedFileSize);
             writer.Write(Index);
             writer.Write(FtexsFileNr);

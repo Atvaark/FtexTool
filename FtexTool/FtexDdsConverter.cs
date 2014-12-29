@@ -112,7 +112,7 @@ namespace FtexTool
                 Array.Copy(mipMapData, mipMapDataOffset, chunkData, 0, chunkSize);
                 chunk.ChunkData = chunkData;
                 chunk.CompressedChunkSize = Convert.ToInt16(chunkSize);
-                chunk.DecompressedCunkSize = Convert.ToInt16(chunkSize);
+                chunk.DecompressedChunkSize = Convert.ToInt16(chunkSize);
                 ftexsFileChunks.Add(chunk);
                 mipMapDataOffset += chunkSize;
             }
@@ -126,8 +126,8 @@ namespace FtexTool
             {
                 FtexFileMipMapInfo mipMapInfo = new FtexFileMipMapInfo();
                 int fileSize = levelData[i].Length;
-                mipMapInfo.UncompressedFileSize = fileSize;
-                mipMapInfo.CompressedFileSize = fileSize;
+                mipMapInfo.DecompressedFileSize = fileSize;
+                mipMapInfo.DecompressedFileSize = fileSize;
                 mipMapInfo.Index = Convert.ToByte(i);
                 mipMapInfo.FtexsFileNr = GetFtexsFileNr(fileSize);
                 mipMapsInfos.Add(mipMapInfo);
