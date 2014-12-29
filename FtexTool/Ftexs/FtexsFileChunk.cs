@@ -38,7 +38,7 @@ namespace FtexTool.Ftexs
             else
             {
                 // HACK: result.Offset could be 0x80000008
-                reader.BaseStream.Position = indexEndPosition + (Offset & OffsetBitMask ) - IndexSize;
+                reader.BaseStream.Position = indexEndPosition + (Offset & OffsetBitMask) - IndexSize;
             }
 
             byte[] data = reader.ReadBytes(CompressedChunkSize);

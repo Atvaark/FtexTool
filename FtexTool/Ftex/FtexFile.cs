@@ -69,7 +69,7 @@ namespace FtexTool.Ftex
 
         public bool TryGetFtexsFile(int fileNumber, out FtexsFile ftexsFile)
         {
-            return  _ftexsFiles.TryGetValue(fileNumber, out ftexsFile);
+            return _ftexsFiles.TryGetValue(fileNumber, out ftexsFile);
         }
 
         public static FtexFile ReadFtexFile(Stream inputStream)
@@ -149,6 +149,5 @@ namespace FtexTool.Ftex
                 }
             }
         }
-
     }
 }

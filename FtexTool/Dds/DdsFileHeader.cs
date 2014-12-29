@@ -55,14 +55,14 @@ namespace FtexTool.Dds
             writer.Write(Depth);
             writer.Write(MipMapCount);
             // int Reserved1[11];
-            writer.WriteZeros(44); 
+            writer.WriteZeros(44);
             PixelFormat.Write(outputStream);
             writer.Write(Convert.ToInt32(Caps));
             writer.Write(Convert.ToInt32(Caps2));
             writer.Write(Caps3);
             writer.Write(Caps4);
             // int Reserved2
-            writer.WriteZeros(4); 
+            writer.WriteZeros(4);
         }
 
         public bool IsDx10()

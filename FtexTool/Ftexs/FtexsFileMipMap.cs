@@ -32,15 +32,12 @@ namespace FtexTool.Ftexs
 
         public int CompressedDataSize
         {
-            get
-            {
-                return Chunks.Sum(chunk => chunk.CompressedChunkSize);
-            }
+            get { return Chunks.Sum(chunk => chunk.CompressedChunkSize); }
         }
 
         internal int IndexBlockSize
         {
-            get { return FtexsFileChunk.IndexSize * _chunks.Count; }
+            get { return FtexsFileChunk.IndexSize*_chunks.Count; }
         }
 
         public int Offset { get; set; }
@@ -64,7 +61,6 @@ namespace FtexTool.Ftexs
                 FtexsFileChunk chunk = FtexsFileChunk.ReadFtexsFileChunk(inputStream, absoluteOffset);
                 AddChunk(chunk);
             }
-
         }
 
         public void AddChunk(FtexsFileChunk chunk)
@@ -78,7 +74,6 @@ namespace FtexTool.Ftexs
             {
                 AddChunk(chunk);
             }
-
         }
 
         public void Write(Stream outputStream, bool absoluteOffset)
@@ -108,6 +103,5 @@ namespace FtexTool.Ftexs
             }
             writer.BaseStream.Position = endPosition;
         }
-
     }
 }

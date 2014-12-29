@@ -11,7 +11,6 @@ namespace FtexTool
 {
     internal static class FtexDdsConverter
     {
-
         public static DdsFile ConvertToDds(FtexFile file)
         {
             DdsFile result = new DdsFile
@@ -133,7 +132,7 @@ namespace FtexTool
             }
             return mipMapsInfos;
         }
-        
+
         private static byte GetFtexsFileNr(int fileSize)
         {
             if (fileSize <= 16384)
@@ -146,6 +145,7 @@ namespace FtexTool
                 return 4;
             return 5;
         }
+
         private static List<byte[]> GetMipMapData(DdsFile file)
         {
             List<byte[]> mipMapDatas = new List<byte[]>();

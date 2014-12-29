@@ -15,7 +15,7 @@ namespace FtexTool.Ftexs
         }
 
         public byte FileNumber { get; set; }
-        
+
         public byte[] Data
         {
             get
@@ -31,10 +31,7 @@ namespace FtexTool.Ftexs
 
         public int CompressedDataSize
         {
-            get
-            {
-                return MipMaps.Sum(mipMap => mipMap.CompressedDataSize);
-            }
+            get { return MipMaps.Sum(mipMap => mipMap.CompressedDataSize); }
         }
 
 
@@ -42,7 +39,7 @@ namespace FtexTool.Ftexs
         {
             _mipMaps = new List<FtexsFileMipMap>();
         }
-        
+
         public void Read(Stream inputStream, short chunkCount, bool absoluteOffset)
         {
             FtexsFileMipMap mipMap = FtexsFileMipMap.ReadFtexsFileMipMap(inputStream, chunkCount, absoluteOffset);
