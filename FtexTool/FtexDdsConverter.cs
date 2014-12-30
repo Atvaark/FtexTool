@@ -73,6 +73,7 @@ namespace FtexTool
             result.AddMipMapInfos(mipMaps);
             result.AddFtexsFiles(ftexsFiles);
             result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count());
+            result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count() - 1);
             return result;
         }
 
@@ -167,17 +168,8 @@ namespace FtexTool
                 Array.Copy(data, dataOffset, buffer, 0, size);
                 mipMapDatas.Add(buffer);
                 dataOffset += size;
-                // TODO: Check if fox engine works without this hack.
-                switch (size)
-                {
-                    case 32:
-                    case 16:
-                        size = size/2;
-                        break;
-                    default:
-                        size = size/4;
-                        break;
-                }
+
+                size = size/4;
             }
             return mipMapDatas;
         }

@@ -184,7 +184,7 @@ namespace FtexTool.Dds
                 Size = DefaultSize,
                 Flags = DdsPixelFormatFlag.Luminance,
                 RgbBitCount = 8,
-                RBitMask = 0x000000ff,
+                RBitMask = 0x000000ff
             };
             return pixelFormat;
         }
@@ -200,25 +200,23 @@ namespace FtexTool.Dds
             throw new NotImplementedException("Could not calculate the image size.");
         }
 
-
-
         protected bool Equals(DdsPixelFormat other)
         {
-            return Size == other.Size && 
-                Flags == other.Flags && 
-                FourCc == other.FourCc && 
-                RgbBitCount == other.RgbBitCount && 
-                RBitMask == other.RBitMask && 
-                GBitMask == other.GBitMask && 
-                BBitMask == other.BBitMask && 
-                ABitMask == other.ABitMask;
+            return Size == other.Size &&
+                   Flags == other.Flags &&
+                   FourCc == other.FourCc &&
+                   RgbBitCount == other.RgbBitCount &&
+                   RBitMask == other.RBitMask &&
+                   GBitMask == other.GBitMask &&
+                   BBitMask == other.BBitMask &&
+                   ABitMask == other.ABitMask;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((DdsPixelFormat) obj);
         }
 

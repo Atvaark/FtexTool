@@ -9,9 +9,8 @@ namespace FtexTool.Ftex
 {
     public class FtexFile
     {
-        private const long MagicNumber = 4612226451348214854; // FTEX 85 EB 01 40
+        private const long MagicNumber1 = 4612226451348214854; // FTEX 85 EB 01 40
         private const int MagicNumber2 = 0x01000001;
-
         private readonly Dictionary<int, FtexsFile> _ftexsFiles;
         private readonly List<FtexFileMipMapInfo> _mipMapInfos;
 
@@ -83,7 +82,7 @@ namespace FtexTool.Ftex
         private void Read(Stream inputStream)
         {
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
-            reader.Assert(MagicNumber);
+            reader.Assert(MagicNumber1);
             PixelFormatType = reader.ReadInt16();
             Width = reader.ReadInt16();
             Height = reader.ReadInt16();
@@ -119,7 +118,7 @@ namespace FtexTool.Ftex
         public void Write(Stream outputStream)
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
-            writer.Write(MagicNumber);
+            writer.Write(MagicNumber1);
             writer.Write(PixelFormatType);
             writer.Write(Width);
             writer.Write(Height);
