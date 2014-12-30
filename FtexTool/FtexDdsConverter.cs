@@ -73,7 +73,7 @@ namespace FtexTool
             result.AddMipMapInfos(mipMaps);
             result.AddFtexsFiles(ftexsFiles);
             result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count());
-            result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count() - 1);
+            result.UnknownCount = Convert.ToByte(ftexsFiles.Count() - 1);
             return result;
         }
 
@@ -162,14 +162,17 @@ namespace FtexTool
             byte[] data = file.Data;
             int dataOffset = 0;
             int size = DdsPixelFormat.CalculateImageSize(file.Header.PixelFormat, file.Header.Width, file.Header.Height);
+            int minimumSize = DdsPixelFormat.GetMinimumImageSize(file.Header.PixelFormat);
             for (int i = 0; i < file.Header.MipMapCount; i++)
             {
                 var buffer = new byte[size];
                 Array.Copy(data, dataOffset, buffer, 0, size);
                 mipMapDatas.Add(buffer);
-                dataOffset += size;
 
+                dataOffset += size;
                 size = size/4;
+                if (size < minimumSize)
+                    size = minimumSize;
             }
             return mipMapDatas;
         }

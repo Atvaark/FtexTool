@@ -115,7 +115,6 @@ namespace FtexTool
 
         private static FtexFile GetFtexFile(string filePath)
         {
-            // TODO: Refactor this method. Too many brackets.
             string fileDirectory = Path.GetDirectoryName(filePath);
             string fileName = Path.GetFileNameWithoutExtension(filePath);
 
