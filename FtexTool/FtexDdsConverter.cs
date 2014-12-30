@@ -160,9 +160,7 @@ namespace FtexTool
             List<byte[]> mipMapDatas = new List<byte[]>();
             byte[] data = file.Data;
             int dataOffset = 0;
-            // HACK: Assuming 8bpp.
-            // TODO: Implement a DdsPixelFormat to ColourDepth lookup table.
-            int size = file.Header.Height*file.Header.Width;
+            int size = DdsPixelFormat.CalculateImageSize(file.Header.PixelFormat, file.Header.Width, file.Header.Height);
             for (int i = 0; i < file.Header.MipMapCount; i++)
             {
                 var buffer = new byte[size];
