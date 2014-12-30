@@ -20,6 +20,7 @@ namespace FtexTool
                     Flags = DdsFileHeaderFlags.Texture | DdsFileHeaderFlags.MipMap,
                     Height = file.Height,
                     Width = file.Width,
+                    Depth = file.Depth,
                     MipMapCount = file.MipMapCount,
                     Caps = DdsSurfaceFlags.Texture | DdsSurfaceFlags.MipMap
                 }
@@ -28,9 +29,8 @@ namespace FtexTool
             switch (file.PixelFormatType)
             {
                 case 0:
-                    // TODO: Find out which Pixel format 0 is.
-                    // Either rgba32 (3 files) or a 64bpp (13 files) format
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfA8R8G8B8();
+                    result.Header.Flags = result.Header.Flags | DdsFileHeaderFlags.Volume;
                     break;
                 case 1:
                     result.Header.PixelFormat = DdsPixelFormat.DdsLuminance();
@@ -53,7 +53,7 @@ namespace FtexTool
             FtexFile result = new FtexFile();
             if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfA8R8G8B8()))
                 result.PixelFormatType = 0;
-            if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsLuminance()))
+            else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsLuminance()))
                 result.PixelFormatType = 1;
             else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt1()))
                 result.PixelFormatType = 2;
@@ -61,9 +61,10 @@ namespace FtexTool
                 result.PixelFormatType = 4;
             else
                 throw new NotImplementedException(String.Format("Unknown PixelFormatType {0}", file.Header.PixelFormat));
-
+           
             result.Height = Convert.ToInt16(file.Header.Height);
             result.Width = Convert.ToInt16(file.Header.Width);
+            result.Depth = Convert.ToInt16(file.Header.Depth);
             result.MipMapCount = Convert.ToByte(file.Header.MipMapCount);
 
             var mipMapData = GetMipMapData(file);
@@ -73,7 +74,11 @@ namespace FtexTool
             result.AddMipMapInfos(mipMaps);
             result.AddFtexsFiles(ftexsFiles);
             result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count());
-            result.UnknownCount = Convert.ToByte(ftexsFiles.Count() - 1);
+            result.AdditionalFtexsFileCount = Convert.ToByte(ftexsFiles.Count() - 1);
+
+            // TODO: Handle the DDS depth flag.
+            result.DxFlags = 1;
+            
             return result;
         }
 
@@ -139,12 +144,16 @@ namespace FtexTool
                 mipMapInfo.FtexsFileNumber = GetFtexsFileNr(fileSize);
                 mipMapsInfos.Add(mipMapInfo);
             }
+
+
+            // BUG: Indexing error when a file numbers are skipped.
             return mipMapsInfos;
         }
 
         private static byte GetFtexsFileNr(int fileSize)
         {
-            // BUG: There can also be mip maps with multiple chunks in file 1.
+            // BUG: There can also be mip maps with multiple chunks in file 1. e.g. 19e96773e6e5
+
             if (fileSize <= 16384)
                 return 1;
             if (fileSize <= 65536)

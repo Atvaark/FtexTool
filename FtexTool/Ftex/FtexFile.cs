@@ -11,6 +11,10 @@ namespace FtexTool.Ftex
     {
         private const long MagicNumber1 = 4612226451348214854; // FTEX 85 EB 01 40
         private const int MagicNumber2 = 0x01000001;
+        private const int OneInt32 = 1;
+        private const int ZeroInt32 = 0;
+        private const byte OneByte = 1;
+        private const byte ZeroByte = 0;
         private readonly Dictionary<int, FtexsFile> _ftexsFiles;
         private readonly List<FtexFileMipMapInfo> _mipMapInfos;
 
@@ -24,10 +28,24 @@ namespace FtexTool.Ftex
         public short PixelFormatType { get; set; }
         public short Width { get; set; }
         public short Height { get; set; }
+        public short Depth { get; set; }
         public byte MipMapCount { get; set; }
+        // Flags 
+        // 0x0 when file ends with _nrt 
+        // 0x2 else
+        public byte NrtFlag { get; set; }
+        // Flags
+        // 0 or 17
+        public short UnknownFlags { get; set; }
+        // Flags
+        // 1, 3, 7 ,9
+        // 0x1 Always set
+        // 0x2 
+        // 0x4 Texturecube
+        // 0x8 Only settable when PixelFormatType = 4 
+        public short DxFlags { get; set; }
         public byte FtexsFileCount { get; set; }
-        // FtexsFileCount - 1
-        public byte UnknownCount { get; set; }
+        public byte AdditionalFtexsFileCount { get; set; }
         public byte[] Hash { get; set; }
 
         public IEnumerable<FtexFileMipMapInfo> MipMapInfos
@@ -86,13 +104,22 @@ namespace FtexTool.Ftex
             PixelFormatType = reader.ReadInt16();
             Width = reader.ReadInt16();
             Height = reader.ReadInt16();
-            reader.Skip(2);
+            Depth = reader.ReadInt16();
             MipMapCount = reader.ReadByte();
-            reader.Skip(11);
-            int magicNumber2 = reader.ReadInt32();
+            NrtFlag = reader.ReadByte();
+            UnknownFlags = reader.ReadInt16();
+            reader.Assert(OneInt32);
+            reader.Assert(ZeroInt32);
+            DxFlags = reader.ReadInt16();
+            reader.Assert(ZeroByte);
+            reader.Assert(OneByte);
             FtexsFileCount = reader.ReadByte();
-            UnknownCount = reader.ReadByte();
-            reader.Skip(14);
+            AdditionalFtexsFileCount = reader.ReadByte();
+            reader.Assert(ZeroByte);
+            reader.Assert(ZeroByte);
+            reader.Assert(ZeroInt32);
+            reader.Assert(ZeroInt32);
+            reader.Assert(ZeroInt32);
             Hash = reader.ReadBytes(16);
 
             for (int i = 0; i < MipMapCount; i++)
@@ -122,13 +149,22 @@ namespace FtexTool.Ftex
             writer.Write(PixelFormatType);
             writer.Write(Width);
             writer.Write(Height);
-            writer.WriteZeros(2);
+            writer.Write(Depth);
             writer.Write(MipMapCount);
-            writer.WriteZeros(11);
-            writer.Write(MagicNumber2);
+            writer.Write(NrtFlag);
+            writer.Write(UnknownFlags);
+            writer.Write(OneInt32);
+            writer.Write(ZeroInt32);
+            writer.Write(DxFlags);
+            writer.Write(ZeroByte);
+            writer.Write(OneByte);
             writer.Write(FtexsFileCount);
-            writer.Write(UnknownCount);
-            writer.WriteZeros(14);
+            writer.Write(AdditionalFtexsFileCount);
+            writer.Write(ZeroByte);
+            writer.Write(ZeroByte);
+            writer.Write(ZeroInt32);
+            writer.Write(ZeroInt32);
+            writer.Write(ZeroInt32);
             writer.Write(Hash);
             foreach (var mipMap in MipMapInfos)
             {

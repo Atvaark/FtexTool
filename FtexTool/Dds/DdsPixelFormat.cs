@@ -207,7 +207,6 @@ namespace FtexTool.Dds
             if (pixelFormat.Equals(DdsPfDxt5()))
                 return 16;
             return 4;
-
         }
 
         protected bool Equals(DdsPixelFormat other)
