@@ -20,19 +20,20 @@ namespace FtexTool
                     Flags = DdsFileHeaderFlags.Texture | DdsFileHeaderFlags.MipMap,
                     Height = file.Height,
                     Width = file.Width,
-                    MipMapCount = file.MipMapCount
+                    MipMapCount = file.MipMapCount,
+                    Caps = DdsSurfaceFlags.Texture | DdsSurfaceFlags.MipMap
                 }
             };
 
-            switch (file.DtxType)
+            switch (file.PixelFormatType)
             {
                 case 0:
-                    // TODO: Find out which DTX Type 0 is.
-                    result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt1();
+                    // TODO: Find out which Pixel format 0 is.
+                    // Either rgba32 (3 files) or a 64bpp (13 files) format
+                    result.Header.PixelFormat = DdsPixelFormat.DdsPfA8R8G8B8();
                     break;
                 case 1:
-                    // TODO: Find out which DTX Type 1 is.
-                    result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt1();
+                    result.Header.PixelFormat = DdsPixelFormat.DdsLuminance();
                     break;
                 case 2:
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt1();
@@ -41,9 +42,8 @@ namespace FtexTool
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt5();
                     break;
                 default:
-                    throw new NotImplementedException(String.Format("Unknown DtxType {0}", file.DtxType));
+                    throw new NotImplementedException(String.Format("Unknown PixelFormatType {0}", file.PixelFormatType));
             }
-            result.Header.Caps = DdsSurfaceFlags.Texture | DdsSurfaceFlags.MipMap;
             result.Data = file.Data;
             return result;
         }
@@ -51,7 +51,17 @@ namespace FtexTool
         public static FtexFile ConvertToFtex(DdsFile file)
         {
             FtexFile result = new FtexFile();
-            result.DtxType = 4;
+            if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfA8R8G8B8()))
+                result.PixelFormatType = 0;
+            if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsLuminance()))
+                result.PixelFormatType = 1;
+            else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt1()))
+                result.PixelFormatType = 2;
+            else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt5()))
+                result.PixelFormatType = 4;
+            else
+                throw new NotImplementedException(String.Format("Unknown PixelFormatType {0}", file.Header.PixelFormat));
+
             result.Height = Convert.ToInt16(file.Header.Height);
             result.Width = Convert.ToInt16(file.Header.Width);
             result.MipMapCount = Convert.ToByte(file.Header.MipMapCount);
@@ -133,6 +143,7 @@ namespace FtexTool
 
         private static byte GetFtexsFileNr(int fileSize)
         {
+            // BUG: There can also be mip maps with multiple chunks in file 1.
             if (fileSize <= 16384)
                 return 1;
             if (fileSize <= 65536)
@@ -149,6 +160,8 @@ namespace FtexTool
             List<byte[]> mipMapDatas = new List<byte[]>();
             byte[] data = file.Data;
             int dataOffset = 0;
+            // HACK: Assuming 8bpp.
+            // TODO: Implement a DdsPixelFormat to ColourDepth lookup table.
             int size = file.Header.Height*file.Header.Width;
             for (int i = 0; i < file.Header.MipMapCount; i++)
             {

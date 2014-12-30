@@ -23,19 +23,24 @@ namespace FtexTool.Dds
         public uint BBitMask { get; set; }
         public uint ABitMask { get; set; }
 
-        public static DdsPixelFormat Read(Stream inputStream)
+        public static DdsPixelFormat ReadDdsPixelFormat(Stream inputStream)
         {
             DdsPixelFormat result = new DdsPixelFormat();
-            BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
-            result.Size = reader.ReadInt32();
-            result.Flags = (DdsPixelFormatFlag) reader.ReadInt32();
-            result.FourCc = reader.ReadInt32();
-            result.RgbBitCount = reader.ReadInt32();
-            result.RBitMask = reader.ReadUInt32();
-            result.GBitMask = reader.ReadUInt32();
-            result.BBitMask = reader.ReadUInt32();
-            result.ABitMask = reader.ReadUInt32();
+            result.Read(inputStream);
             return result;
+        }
+
+        private void Read(Stream inputStream)
+        {
+            BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
+            Size = reader.ReadInt32();
+            Flags = (DdsPixelFormatFlag) reader.ReadInt32();
+            FourCc = reader.ReadInt32();
+            RgbBitCount = reader.ReadInt32();
+            RBitMask = reader.ReadUInt32();
+            GBitMask = reader.ReadUInt32();
+            BBitMask = reader.ReadUInt32();
+            ABitMask = reader.ReadUInt32();
         }
 
         public void Write(Stream outputStream)
@@ -170,6 +175,54 @@ namespace FtexTool.Dds
                 FourCc = fourCc
             };
             return pixelFormat;
+        }
+
+        public static DdsPixelFormat DdsLuminance()
+        {
+            DdsPixelFormat pixelFormat = new DdsPixelFormat
+            {
+                Size = DefaultSize,
+                Flags = DdsPixelFormatFlag.Luminance,
+                RgbBitCount = 8,
+                RBitMask = 0x000000ff,
+            };
+            return pixelFormat;
+        }
+
+        protected bool Equals(DdsPixelFormat other)
+        {
+            return Size == other.Size && 
+                Flags == other.Flags && 
+                FourCc == other.FourCc && 
+                RgbBitCount == other.RgbBitCount && 
+                RBitMask == other.RBitMask && 
+                GBitMask == other.GBitMask && 
+                BBitMask == other.BBitMask && 
+                ABitMask == other.ABitMask;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((DdsPixelFormat) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Size;
+                hashCode = (hashCode*397) ^ (int) Flags;
+                hashCode = (hashCode*397) ^ FourCc;
+                hashCode = (hashCode*397) ^ RgbBitCount;
+                hashCode = (hashCode*397) ^ (int) RBitMask;
+                hashCode = (hashCode*397) ^ (int) GBitMask;
+                hashCode = (hashCode*397) ^ (int) BBitMask;
+                hashCode = (hashCode*397) ^ (int) ABitMask;
+                return hashCode;
+            }
         }
     }
 }

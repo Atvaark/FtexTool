@@ -10,6 +10,8 @@ namespace FtexTool.Ftex
     public class FtexFile
     {
         private const long MagicNumber = 4612226451348214854; // FTEX 85 EB 01 40
+        private const int MagicNumber2 = 0x01000001;
+
         private readonly Dictionary<int, FtexsFile> _ftexsFiles;
         private readonly List<FtexFileMipMapInfo> _mipMapInfos;
 
@@ -20,7 +22,7 @@ namespace FtexTool.Ftex
             Hash = new byte[16];
         }
 
-        public short DtxType { get; set; }
+        public short PixelFormatType { get; set; }
         public short Width { get; set; }
         public short Height { get; set; }
         public byte MipMapCount { get; set; }
@@ -82,12 +84,13 @@ namespace FtexTool.Ftex
         {
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
             reader.Assert(MagicNumber);
-            DtxType = reader.ReadInt16();
+            PixelFormatType = reader.ReadInt16();
             Width = reader.ReadInt16();
             Height = reader.ReadInt16();
             reader.Skip(2);
             MipMapCount = reader.ReadByte();
-            reader.Skip(15);
+            reader.Skip(11);
+            int magicNumber2 = reader.ReadInt32();
             FtexsFileCount = reader.ReadByte();
             UnknownCount = reader.ReadByte();
             reader.Skip(14);
@@ -117,12 +120,13 @@ namespace FtexTool.Ftex
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
             writer.Write(MagicNumber);
-            writer.Write(DtxType);
+            writer.Write(PixelFormatType);
             writer.Write(Width);
             writer.Write(Height);
             writer.WriteZeros(2);
             writer.Write(MipMapCount);
-            writer.WriteZeros(15);
+            writer.WriteZeros(11);
+            writer.Write(MagicNumber2);
             writer.Write(FtexsFileCount);
             writer.Write(UnknownCount);
             writer.WriteZeros(14);

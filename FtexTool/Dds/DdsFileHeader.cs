@@ -34,7 +34,7 @@ namespace FtexTool.Dds
             result.MipMapCount = reader.ReadInt32();
             // int Reserved1[11];
             reader.Skip(44);
-            result.PixelFormat = DdsPixelFormat.Read(inputStream);
+            result.PixelFormat = DdsPixelFormat.ReadDdsPixelFormat(inputStream);
             result.Caps = (DdsSurfaceFlags) reader.ReadInt32();
             result.Caps2 = (DdsCubemap) reader.ReadInt32();
             result.Caps3 = reader.ReadInt32();
