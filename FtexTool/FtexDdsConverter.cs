@@ -63,7 +63,7 @@ namespace FtexTool
                 result.PixelFormatType = 4;
             else
                 throw new NotImplementedException(String.Format("Unknown PixelFormatType {0}", file.Header.PixelFormat));
-           
+
             result.Height = Convert.ToInt16(file.Header.Height);
             result.Width = Convert.ToInt16(file.Header.Width);
             result.Depth = Convert.ToInt16(file.Header.Depth);
@@ -77,12 +77,12 @@ namespace FtexTool
             result.AddFtexsFiles(ftexsFiles);
             result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count());
             result.AdditionalFtexsFileCount = Convert.ToByte(ftexsFiles.Count() - 1);
-            
+
             // TODO: Check if the texture is not a diffuse map.
             result.TextureType = FtexTextureType.DiffuseMap;
-            
+
             // TODO: Handle the DDS depth flag.
-            
+
             return result;
         }
 
@@ -177,6 +177,7 @@ namespace FtexTool
                 return 4;
             return 5;
         }
+
         private static List<byte[]> GetMipMapData(DdsFile file)
         {
             const int minimumWidth = 4;
@@ -192,9 +193,9 @@ namespace FtexTool
                 var buffer = new byte[size];
                 Array.Copy(data, dataOffset, buffer, 0, size);
                 mipMapDatas.Add(buffer);
-                dataOffset += size; ;
-                width = Math.Max(width / 2, minimumWidth);
-                height = Math.Max(height / 2, minimumHeight);
+                dataOffset += size;
+                width = Math.Max(width/2, minimumWidth);
+                height = Math.Max(height/2, minimumHeight);
             }
             return mipMapDatas;
         }
