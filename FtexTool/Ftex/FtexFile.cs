@@ -39,6 +39,14 @@ namespace FtexTool.Ftex
         public short UnknownFlags { get; set; }
         // Flags
         // 1, 3, 7 ,9
+        // 1 - SRM/MTM files, Each channel acts as a material parameter
+        //      R = Ambient Occlusion
+        //      G = Specular Albedo
+        //      B = Roughness
+        // 3 - BSM files, Albedo diffuse textures
+        // 7 - CBM files, Cubemap files. In this case there are 6 times
+        //                  as many MIP entries for each face
+        // 9 - NRM files, Normal maps
         // 0x1 Always set
         // 0x2 
         // 0x4 Texturecube
