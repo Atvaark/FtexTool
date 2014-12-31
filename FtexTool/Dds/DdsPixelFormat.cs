@@ -34,7 +34,7 @@ namespace FtexTool.Dds
         {
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
             Size = reader.ReadInt32();
-            Flags = (DdsPixelFormatFlag) reader.ReadInt32();
+            Flags = (DdsPixelFormatFlag) reader.ReadUInt32();
             FourCc = reader.ReadInt32();
             RgbBitCount = reader.ReadInt32();
             RBitMask = reader.ReadUInt32();
@@ -47,7 +47,7 @@ namespace FtexTool.Dds
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
             writer.Write(Size);
-            writer.Write(Convert.ToInt32(Flags));
+            writer.Write(Convert.ToUInt32(Flags));
             writer.Write(FourCc);
             writer.Write(RgbBitCount);
             writer.Write(RBitMask);

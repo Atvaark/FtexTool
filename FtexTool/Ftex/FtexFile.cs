@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using FtexTool.Ftex.Enum;
 using FtexTool.Ftexs;
 
 namespace FtexTool.Ftex
@@ -37,21 +38,7 @@ namespace FtexTool.Ftex
         // Flags
         // 0 or 17
         public short UnknownFlags { get; set; }
-        // Flags
-        // 1, 3, 7 ,9
-        // 1 - SRM/MTM files, Each channel acts as a material parameter
-        //      R = Ambient Occlusion
-        //      G = Specular Albedo
-        //      B = Roughness
-        // 3 - BSM files, Albedo diffuse textures
-        // 7 - CBM files, Cubemap files. In this case there are 6 times
-        //                  as many MIP entries for each face
-        // 9 - NRM files, Normal maps
-        // 0x1 Always set
-        // 0x2 
-        // 0x4 Texturecube
-        // 0x8 Only settable when PixelFormatType = 4 
-        public short DxFlags { get; set; }
+        public FtexTextureType TextureType { get; set; }
         public byte FtexsFileCount { get; set; }
         public byte AdditionalFtexsFileCount { get; set; }
         public byte[] Hash { get; set; }
@@ -118,9 +105,7 @@ namespace FtexTool.Ftex
             UnknownFlags = reader.ReadInt16();
             reader.Assert(OneInt32);
             reader.Assert(ZeroInt32);
-            DxFlags = reader.ReadInt16();
-            reader.Assert(ZeroByte);
-            reader.Assert(OneByte);
+            TextureType = (FtexTextureType) reader.ReadInt32();
             FtexsFileCount = reader.ReadByte();
             AdditionalFtexsFileCount = reader.ReadByte();
             reader.Assert(ZeroByte);
@@ -163,9 +148,7 @@ namespace FtexTool.Ftex
             writer.Write(UnknownFlags);
             writer.Write(OneInt32);
             writer.Write(ZeroInt32);
-            writer.Write(DxFlags);
-            writer.Write(ZeroByte);
-            writer.Write(OneByte);
+            writer.Write(Convert.ToInt32(TextureType));
             writer.Write(FtexsFileCount);
             writer.Write(AdditionalFtexsFileCount);
             writer.Write(ZeroByte);

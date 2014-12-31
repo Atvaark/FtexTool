@@ -4,6 +4,7 @@ using System.Linq;
 using FtexTool.Dds;
 using FtexTool.Dds.Enum;
 using FtexTool.Ftex;
+using FtexTool.Ftex.Enum;
 using FtexTool.Ftexs;
 
 namespace FtexTool
@@ -44,6 +45,7 @@ namespace FtexTool
                 default:
                     throw new NotImplementedException(String.Format("Unknown PixelFormatType {0}", file.PixelFormatType));
             }
+
             result.Data = file.Data;
             return result;
         }
@@ -66,18 +68,20 @@ namespace FtexTool
             result.Width = Convert.ToInt16(file.Header.Width);
             result.Depth = Convert.ToInt16(file.Header.Depth);
             result.MipMapCount = Convert.ToByte(file.Header.MipMapCount);
+            result.NrtFlag = 2;
 
             var mipMapData = GetMipMapData(file);
             var mipMaps = GetMipMapInfos(mipMapData);
             var ftexsFiles = GetFtexsFiles(mipMaps, mipMapData);
-
             result.AddMipMapInfos(mipMaps);
             result.AddFtexsFiles(ftexsFiles);
             result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count());
             result.AdditionalFtexsFileCount = Convert.ToByte(ftexsFiles.Count() - 1);
-
+            
+            // TODO: Check if the texture is not a diffuse map.
+            result.TextureType = FtexTextureType.DiffuseMap;
+            
             // TODO: Handle the DDS depth flag.
-            result.DxFlags = 1;
             
             return result;
         }
@@ -141,19 +145,28 @@ namespace FtexTool
                 int fileSize = levelData[i].Length;
                 mipMapInfo.DecompressedFileSize = fileSize;
                 mipMapInfo.Index = Convert.ToByte(i);
-                mipMapInfo.FtexsFileNumber = GetFtexsFileNr(fileSize);
                 mipMapsInfos.Add(mipMapInfo);
             }
 
-
-            // BUG: Indexing error when a file numbers are skipped.
+            SetMipMapFileNumber(mipMapsInfos);
             return mipMapsInfos;
         }
 
-        private static byte GetFtexsFileNr(int fileSize)
+        private static void SetMipMapFileNumber(ICollection<FtexFileMipMapInfo> mipMapsInfos)
         {
-            // BUG: There can also be mip maps with multiple chunks in file 1. e.g. 19e96773e6e5
+            int fileSize = 0;
+            byte nextFileNumber = 1;
+            foreach (var mipMapInfo in mipMapsInfos.OrderBy(m => m.DecompressedFileSize))
+            {
+                mipMapInfo.FtexsFileNumber = nextFileNumber;
+                fileSize += mipMapInfo.DecompressedFileSize;
+                nextFileNumber = GetFtexsFileNumber(fileSize);
+            }
+        }
 
+        private static byte GetFtexsFileNumber(int fileSize)
+        {
+            // TODO: When the mipmap count is 1-5 then always 1
             if (fileSize <= 16384)
                 return 1;
             if (fileSize <= 65536)
@@ -164,7 +177,6 @@ namespace FtexTool
                 return 4;
             return 5;
         }
-
         private static List<byte[]> GetMipMapData(DdsFile file)
         {
             List<byte[]> mipMapDatas = new List<byte[]>();
@@ -178,7 +190,8 @@ namespace FtexTool
                 Array.Copy(data, dataOffset, buffer, 0, size);
                 mipMapDatas.Add(buffer);
 
-                dataOffset += size;
+                dataOffset += size; ;
+                // BUG: In some files the size gets divided by 2 to get the size of the 2 smallest mipmaps (e.g. 128-64-32).
                 size = size/4;
                 if (size < minimumSize)
                     size = minimumSize;
