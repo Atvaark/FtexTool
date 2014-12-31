@@ -179,22 +179,22 @@ namespace FtexTool
         }
         private static List<byte[]> GetMipMapData(DdsFile file)
         {
+            const int minimumWidth = 4;
+            const int minimumHeight = 4;
             List<byte[]> mipMapDatas = new List<byte[]>();
             byte[] data = file.Data;
             int dataOffset = 0;
-            int size = DdsPixelFormat.CalculateImageSize(file.Header.PixelFormat, file.Header.Width, file.Header.Height);
-            int minimumSize = DdsPixelFormat.GetMinimumImageSize(file.Header.PixelFormat);
+            var width = file.Header.Width;
+            var height = file.Header.Height;
             for (int i = 0; i < file.Header.MipMapCount; i++)
             {
+                int size = DdsPixelFormat.CalculateImageSize(file.Header.PixelFormat, width, height);
                 var buffer = new byte[size];
                 Array.Copy(data, dataOffset, buffer, 0, size);
                 mipMapDatas.Add(buffer);
-
                 dataOffset += size; ;
-                // BUG: In some files the size gets divided by 2 to get the size of the 2 smallest mipmaps (e.g. 128-64-32).
-                size = size/4;
-                if (size < minimumSize)
-                    size = minimumSize;
+                width = Math.Max(width / 2, minimumWidth);
+                height = Math.Max(height / 2, minimumHeight);
             }
             return mipMapDatas;
         }
