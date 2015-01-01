@@ -6,6 +6,7 @@ namespace PftxTool.Pftx
 {
     public class PftxsFileIndex
     {
+        public static int HeaderSize = 8;
         public int FileNameOffset { get; set; }
         public int FileSize { get; set; }
         public string FileName { get; set; }
@@ -22,6 +23,31 @@ namespace PftxTool.Pftx
             input.Position = FileNameOffset;
             FileName = reader.ReadNullTerminatedString();
             input.Position = position;
+        }
+
+        public void Write(Stream output)
+        {
+            BinaryWriter writer = new BinaryWriter(output, Encoding.Default, true);
+            writer.Write(FileNameOffset);
+            writer.Write(FileSize);
+
+            // TODO: Write remaining values
+        }
+
+        public void WriteFileName(Stream output)
+        {
+            BinaryWriter writer = new BinaryWriter(output, Encoding.Default, true);
+            writer.WriteNullTerminatedString(FileName);
+        }
+
+        public void WriteData(Stream output)
+        {
+            output.Write(Data, 0, Data.Length);
+        }
+
+        public void WritePsubFile(Stream output)
+        {
+            PsubFile.Write(output);
         }
     }
 }

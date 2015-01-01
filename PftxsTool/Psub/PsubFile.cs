@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using PftxTool;
 
@@ -36,16 +38,44 @@ namespace PftxsTool.Psub
             EntryCount = reader.ReadInt32();
             for (int i = 0; i < EntryCount; i++)
             {
-                PsubFileIndex index = new PsubFileIndex();
-                index.Read(input);
-                _indices.Add(index);
+                PsubFileIndex index = PsubFileIndex.ReadPsubFileIndex(input);
+                AddPsubFileIndex(index);
             }
             input.AlignRead(16);
             foreach (var index in Indices)
             {
                 index.Data = reader.ReadBytes(index.Size);
+                input.AlignRead(16);
             }
-            input.AlignRead(16);
+        }
+
+        public void AddPsubFileIndex(PsubFileIndex index)
+        {
+            _indices.Add(index);
+        }
+
+        public void Write(Stream output)
+        {
+            BinaryWriter writer = new BinaryWriter(output, Encoding.Default, true);
+            writer.Write(MagicNumber);
+            writer.Write(EntryCount);
+            long indexPosition = output.Position;
+            output.Position += PsubFileIndex.PsubFileIndexSize * Indices.Count();
+            output.AlignWrite(16, 0xCC);
+            foreach (var index in Indices)
+            {
+                index.Offset = Convert.ToInt32(output.Position);
+                index.Size = index.Data.Length;
+                index.WriteData(output);
+                output.AlignWrite(16, 0xCC);
+            }
+            long endPosition = output.Position;
+            output.Position = indexPosition;
+            foreach (var index in Indices)
+            {
+                index.Write(output);
+            }
+            output.Position = endPosition;
         }
     }
 }
