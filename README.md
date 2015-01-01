@@ -26,3 +26,20 @@ Converting a .dds file to .ftex:
 ```
 FtexTool.exe path.dds
 ```
+
+PftxsTool
+========
+A tool for unpacking Fox Engine texture pack (.pftxs) file
+
+Requirements
+--------
+```
+Microsoft .NET Framework 4.5 
+```
+Usage
+--------
+
+Unpacking all Fox Engine texure files (.ftex) and Fox Engine sub texture files (.ftexs)  in a .pftxs file
+```
+PftxsTool.exe path.pftxs
+```
