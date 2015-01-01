@@ -11,7 +11,12 @@ namespace PftxsTool
 {
     internal static class Program
     {
-        private const string UsageInfo = "PftxsTool.exe path.pftxs|path_pftxs.inf";
+        private const string UsageInfo = "PftxsTool.exe by Atvaark\n" +
+                                         "Description:\n" +
+                                         "  Unpacking and repacking Fox Engine texture pack (.pftxs) files.\n" +
+                                         "Usage:\n" +
+                                         "  PftxsTool.exe filename.pftxs     -Unpacks the files in the folder 'filename'\n" +
+                                         "  PftxsTool.exe filename_pftxs.inf -Repacks the files in the folder 'filename'";
 
         private static void Main(string[] args)
         {
