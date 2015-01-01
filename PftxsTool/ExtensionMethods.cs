@@ -1,9 +1,8 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace PftxTool
+namespace PftxsTool
 {
     internal static class ExtensionMethods
     {
@@ -20,10 +19,9 @@ namespace PftxTool
 
         internal static void WriteNullTerminatedString(this BinaryWriter writer, string text)
         {
-            byte[] data = Encoding.Default.GetBytes(text + '\0') ;
+            byte[] data = Encoding.Default.GetBytes(text + '\0');
             writer.Write(data, 0, data.Length);
         }
-
 
         internal static void AlignRead(this Stream input, int alignment)
         {
@@ -34,14 +32,12 @@ namespace PftxTool
 
         internal static void AlignWrite(this Stream output, int alignment, byte data)
         {
-            long alignmentRequired = output.Position % alignment;
+            long alignmentRequired = output.Position%alignment;
             if (alignmentRequired > 0)
             {
                 byte[] alignmentBytes = Enumerable.Repeat(data, (int) (alignment - alignmentRequired)).ToArray();
                 output.Write(alignmentBytes, 0, alignmentBytes.Length);
-                
             }
         }
-
     }
 }

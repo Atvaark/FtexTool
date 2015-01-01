@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using PftxsTool.Psub;
 
-namespace PftxTool.Pftx
+namespace PftxsTool.Pftxs
 {
     public class PftxsFile
     {
-        private const int HeaderSize = 20;
+        public const int HeaderSize = 20;
         private const int PftxMagicNumber = 0x58544650; //PFTX
-        private const int MagicNumber2 = 0x3F800000;
+        private const int MagicNumber2 = 0x3F800000; // float 1
         private const int EndOfPackFileMagicNumber = 0x46504F45; //EOPF
         private readonly List<PftxsFileIndex> _filesIndices;
 

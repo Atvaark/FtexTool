@@ -6,7 +6,6 @@ namespace PftxsTool.Psub
     public class PsubFileIndex
     {
         public const int PsubFileIndexSize = 8;
-
         public int Offset { get; set; }
         public int Size { get; set; }
         public byte[] Data { get; set; }

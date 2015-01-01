@@ -2,11 +2,11 @@
 using System.Text;
 using PftxsTool.Psub;
 
-namespace PftxTool.Pftx
+namespace PftxsTool.Pftxs
 {
     public class PftxsFileIndex
     {
-        public static int HeaderSize = 8;
+        public const int HeaderSize = 8;
         public int FileNameOffset { get; set; }
         public int FileSize { get; set; }
         public string FileName { get; set; }
@@ -30,8 +30,6 @@ namespace PftxTool.Pftx
             BinaryWriter writer = new BinaryWriter(output, Encoding.Default, true);
             writer.Write(FileNameOffset);
             writer.Write(FileSize);
-
-            // TODO: Write remaining values
         }
 
         public void WriteFileName(Stream output)

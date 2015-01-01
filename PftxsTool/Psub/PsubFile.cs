@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using PftxTool;
 
 namespace PftxsTool.Psub
 {
@@ -16,8 +15,6 @@ namespace PftxsTool.Psub
         {
             _indices = new List<PsubFileIndex>();
         }
-
-        public int EntryCount { get; set; }
 
         public IEnumerable<PsubFileIndex> Indices
         {
@@ -35,8 +32,8 @@ namespace PftxsTool.Psub
         {
             BinaryReader reader = new BinaryReader(input, Encoding.Default, true);
             int magicNumber = reader.ReadInt32();
-            EntryCount = reader.ReadInt32();
-            for (int i = 0; i < EntryCount; i++)
+            int indexCount = reader.ReadInt32();
+            for (int i = 0; i < indexCount; i++)
             {
                 PsubFileIndex index = PsubFileIndex.ReadPsubFileIndex(input);
                 AddPsubFileIndex(index);
@@ -58,9 +55,9 @@ namespace PftxsTool.Psub
         {
             BinaryWriter writer = new BinaryWriter(output, Encoding.Default, true);
             writer.Write(MagicNumber);
-            writer.Write(EntryCount);
+            writer.Write(Indices.Count());
             long indexPosition = output.Position;
-            output.Position += PsubFileIndex.PsubFileIndexSize * Indices.Count();
+            output.Position += PsubFileIndex.PsubFileIndexSize*Indices.Count();
             output.AlignWrite(16, 0xCC);
             foreach (var index in Indices)
             {

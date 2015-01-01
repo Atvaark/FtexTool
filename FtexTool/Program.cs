@@ -80,7 +80,6 @@ namespace FtexTool
                     ftexsFile.Write(ftexsStream);
             }
 
-            // TODO: Calculate the offsets before saving.
             ftexFile.UpdateOffsets();
 
             string ftexFileName = String.Format("{0}.ftex", fileName);

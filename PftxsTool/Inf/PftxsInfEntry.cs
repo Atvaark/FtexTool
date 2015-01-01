@@ -2,14 +2,8 @@
 {
     public class PftxsInfEntry
     {
-        public string ArchiveName { get; set; }
-        public string FileDirectory { get; set; }
-        public string FileName { get; set; }
-        public int SubFileCount { get; set; }
-
         public PftxsInfEntry()
         {
-            
         }
 
         private PftxsInfEntry(string archiveName, string fileDirectory, string fileName, int subFileCount)
@@ -19,6 +13,11 @@
             FileName = fileName;
             SubFileCount = subFileCount;
         }
+
+        public string ArchiveName { get; set; }
+        public string FileDirectory { get; set; }
+        public string FileName { get; set; }
+        public int SubFileCount { get; set; }
 
         public static PftxsInfEntry Create(string archiveName, string fileDirectory, string fileName, int subFileCount)
         {

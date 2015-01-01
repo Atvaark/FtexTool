@@ -154,26 +154,31 @@ namespace FtexTool
 
         private static void SetMipMapFileNumber(ICollection<FtexFileMipMapInfo> mipMapsInfos)
         {
-            int fileSize = 0;
-            byte nextFileNumber = 1;
-            foreach (var mipMapInfo in mipMapsInfos.OrderBy(m => m.DecompressedFileSize))
+            if (mipMapsInfos.Count == 1)
             {
-                mipMapInfo.FtexsFileNumber = nextFileNumber;
-                fileSize += mipMapInfo.DecompressedFileSize;
-                nextFileNumber = GetFtexsFileNumber(fileSize);
+                mipMapsInfos.Single().FtexsFileNumber = 1;
+            }
+            else
+            {
+                int fileSize = 0;
+                foreach (var mipMapInfo in mipMapsInfos.OrderBy(m => m.DecompressedFileSize))
+                {
+                    fileSize += mipMapInfo.DecompressedFileSize;
+                    mipMapInfo.FtexsFileNumber = GetFtexsFileNumber(fileSize);
+                }
             }
         }
 
         private static byte GetFtexsFileNumber(int fileSize)
         {
-            // TODO: When the mipmap count is 1-5 then always 1
-            if (fileSize <= 16384)
+            // TODO: Find the correct algorithm.
+            if (fileSize <= 21872)
                 return 1;
-            if (fileSize <= 65536)
+            if (fileSize <= 87408)
                 return 2;
-            if (fileSize <= 262144)
+            if (fileSize <= 349552)
                 return 3;
-            if (fileSize <= 1048576)
+            if (fileSize <= 1398128)
                 return 4;
             return 5;
         }

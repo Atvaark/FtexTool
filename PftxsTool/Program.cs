@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using PftxTool.Pftx;
 using System.Text;
 using PftxsTool.Inf;
+using PftxsTool.Pftxs;
 using PftxsTool.Psub;
 
-namespace PftxTool
+namespace PftxsTool
 {
-    internal class Program
+    internal static class Program
     {
         private const string UsageInfo = "PftxsTool.exe path.pftxs|path_pftxs.inf";
 
@@ -31,7 +31,7 @@ namespace PftxTool
             }
             Console.WriteLine(UsageInfo);
         }
-        
+
         private static void UnpackPftxFile(string path)
         {
             string archiveName = Path.GetFileNameWithoutExtension(path);
@@ -58,7 +58,6 @@ namespace PftxTool
                     fileName = Path.GetFileName(file.FileName);
                 }
                 string relativeOutputDirectory = Path.Combine(archiveName, fileDirectory);
-                string relativeFilePath = Path.Combine(relativeOutputDirectory, fileName);
                 string fullOutputDirectory = Path.Combine(archiveDirectory, relativeOutputDirectory);
                 string fullPath = Path.Combine(fullOutputDirectory, fileName);
                 string fullFilePath = string.Format("{0}.ftex", fullPath);
@@ -78,13 +77,13 @@ namespace PftxTool
                     }
                     subFileNumber += 1;
                 }
-                string logLine = String.Format("{0};{1};{2};{3}", archiveName, fileDirectory, fileName, file.PsubFile.Indices.Count());
+                string logLine = String.Format("{0};{1};{2};{3}", archiveName, fileDirectory, fileName,
+                    file.PsubFile.Indices.Count());
                 logStringBuilder.AppendLine(logLine);
             }
             string logPath = Path.Combine(archiveDirectory, String.Format("{0}_pftxs.inf", archiveName));
             File.WriteAllText(logPath, logStringBuilder.ToString());
         }
-
 
         private static void PackPftxFile(string path)
         {
@@ -126,12 +125,14 @@ namespace PftxTool
                 for (int i = 1; i <= entry.SubFileCount; i++)
                 {
                     string fullSubFilePath = String.Format("{0}.{1}.ftexs", filePath, i);
-                    PsubFileIndex psubFileIndex = new PsubFileIndex();
-                    psubFileIndex.Data = File.ReadAllBytes(fullSubFilePath);
-                    psubFileIndex.Size = psubFileIndex.Data.Length;
+                    var psubFileData = File.ReadAllBytes(fullSubFilePath);
+                    PsubFileIndex psubFileIndex = new PsubFileIndex
+                    {
+                        Data = psubFileData,
+                        Size = psubFileData.Length
+                    };
                     psubFile.AddPsubFileIndex(psubFileIndex);
                 }
-                psubFile.EntryCount = psubFile.Indices.Count();
                 index.PsubFile = psubFile;
                 pftxsFile.AddPftxsFileIndex(index);
             }
