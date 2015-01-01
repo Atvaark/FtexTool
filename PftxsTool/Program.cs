@@ -61,17 +61,18 @@ namespace PftxTool
                 string relativeFilePath = Path.Combine(relativeOutputDirectory, fileName);
                 string fullOutputDirectory = Path.Combine(archiveDirectory, relativeOutputDirectory);
                 string fullPath = Path.Combine(fullOutputDirectory, fileName);
+                string fullFilePath = string.Format("{0}.ftex", fullPath);
                 Directory.CreateDirectory(fullOutputDirectory);
-                using (FileStream fileOutputStream = new FileStream(fullPath, FileMode.Create))
+                using (FileStream fileOutputStream = new FileStream(fullFilePath, FileMode.Create))
                 {
                     fileOutputStream.Write(file.Data, 0, file.Data.Length);
                 }
                 int subFileNumber = 1;
                 foreach (var subFileIndex in file.PsubFile.Indices)
                 {
-                    string subFilePath = String.Format("{0}.{1}", fullPath, subFileNumber);
+                    string fullSubFilePath = String.Format("{0}.{1}.ftexs", fullPath, subFileNumber);
 
-                    using (FileStream subFileOutputStream = new FileStream(subFilePath, FileMode.Create))
+                    using (FileStream subFileOutputStream = new FileStream(fullSubFilePath, FileMode.Create))
                     {
                         subFileOutputStream.Write(subFileIndex.Data, 0, subFileIndex.Data.Length);
                     }
@@ -118,14 +119,15 @@ namespace PftxTool
                     lastDirectory = entry.FileDirectory;
                     filePath = Path.Combine(workingDirectoryPath, entry.ArchiveName, relativeFilePath);
                 }
-                index.Data = File.ReadAllBytes(filePath);
+                string fullFilePath = string.Format("{0}.ftex", filePath);
+                index.Data = File.ReadAllBytes(fullFilePath);
                 index.FileSize = index.Data.Length;
                 PsubFile psubFile = new PsubFile();
                 for (int i = 1; i <= entry.SubFileCount; i++)
                 {
-                    string subFilePath = String.Format("{0}.{1}", filePath, i);
+                    string fullSubFilePath = String.Format("{0}.{1}.ftexs", filePath, i);
                     PsubFileIndex psubFileIndex = new PsubFileIndex();
-                    psubFileIndex.Data = File.ReadAllBytes(subFilePath);
+                    psubFileIndex.Data = File.ReadAllBytes(fullSubFilePath);
                     psubFileIndex.Size = psubFileIndex.Data.Length;
                     psubFile.AddPsubFileIndex(psubFileIndex);
                 }
