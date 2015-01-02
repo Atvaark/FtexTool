@@ -27,7 +27,7 @@ namespace PftxsTool
         {
             long alignmentRequired = input.Position%alignment;
             if (alignmentRequired > 0)
-                input.Position += alignmentRequired;
+                input.Position += alignment - alignmentRequired;
         }
 
         internal static void AlignWrite(this Stream output, int alignment, byte data)
