@@ -2,12 +2,13 @@
 {
     public enum FtexTextureType
     {
-        // SRM and MTM files
-        // Each channel acts as a material parameter
-        //      R = Ambient Occlusion
-        //      G = Specular Albedo
-        //      B = Roughness
         /// <summary>
+        ///     SRM and MTM files
+        ///     SRM files:
+        ///        Each channel acts as a material parameter
+        ///        R = Ambient Occlusion
+        ///        G = Specular Albedo
+        ///        B = Roughness
         /// </summary>
         MaterialMap = 0x01000001,
 

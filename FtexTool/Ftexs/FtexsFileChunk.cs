@@ -8,10 +8,20 @@ namespace FtexTool.Ftexs
     {
         public const int IndexSize = 8;
         private const int OffsetBitMask = 0xFFFF;
-        public short CompressedChunkSize { get; set; }
-        public short DecompressedChunkSize { get; set; }
+
+        public short CompressedChunkSize
+        {
+            get { return Convert.ToInt16(CompressedChunkData.Length); }
+        }
+
+        public short ChunkSize
+        {
+            get { return Convert.ToInt16(ChunkData.Length); }
+        }
+
         public uint Offset { get; set; }
-        public byte[] ChunkData { get; set; }
+        public byte[] ChunkData { get; private set; }
+        public byte[] CompressedChunkData { get; private set; }
 
         public static FtexsFileChunk ReadFtexsFileChunk(Stream inputStream, bool absoluteOffset)
         {
@@ -23,8 +33,8 @@ namespace FtexTool.Ftexs
         public void Read(Stream inputStream, bool absoluteOffset)
         {
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
-            CompressedChunkSize = reader.ReadInt16();
-            DecompressedChunkSize = reader.ReadInt16();
+            short compressedChunkSize = reader.ReadInt16();
+            short decompressedChunkSize = reader.ReadInt16();
             Offset = reader.ReadUInt32();
 
             long indexEndPosition = reader.BaseStream.Position;
@@ -39,11 +49,9 @@ namespace FtexTool.Ftexs
                 reader.BaseStream.Position = indexEndPosition + (Offset & OffsetBitMask) - IndexSize;
             }
 
-            byte[] data = reader.ReadBytes(CompressedChunkSize);
-            ChunkData = CompressedChunkSize == DecompressedChunkSize
-                ? data
-                : ZipUtility.Inflate(data);
-
+            byte[] data = reader.ReadBytes(compressedChunkSize);
+            bool dataCompressed = compressedChunkSize != decompressedChunkSize;
+            SetData(data, dataCompressed);
             reader.BaseStream.Position = indexEndPosition;
         }
 
@@ -51,16 +59,35 @@ namespace FtexTool.Ftexs
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
             writer.Write(CompressedChunkSize);
-            writer.Write(DecompressedChunkSize);
+            writer.Write(ChunkSize);
             writer.Write(Offset);
         }
 
-        public void WriteData(Stream outputStream)
+        public void WriteData(Stream outputStream, bool writeCompressedData)
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
-            byte[] data = ZipUtility.Deflate(ChunkData);
-            CompressedChunkSize = Convert.ToInt16(data.Length);
-            writer.Write(data);
+            if (writeCompressedData)
+            {
+                writer.Write(CompressedChunkData);
+            }
+            else
+            {
+                writer.Write(ChunkData);
+            }
+        }
+
+        public void SetData(byte[] chunkData, bool compressed)
+        {
+            if (compressed)
+            {
+                CompressedChunkData = chunkData;
+                ChunkData = ZipUtility.Inflate(chunkData);
+            }
+            else
+            {
+                CompressedChunkData = ZipUtility.Deflate(chunkData);
+                ChunkData = chunkData;
+            }
         }
     }
 }

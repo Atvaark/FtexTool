@@ -127,9 +127,7 @@ namespace FtexTool
                 int chunkSize = Math.Min(mipMapData.Length - mipMapDataOffset, maxChunkSize);
                 byte[] chunkData = new byte[chunkSize];
                 Array.Copy(mipMapData, mipMapDataOffset, chunkData, 0, chunkSize);
-                chunk.ChunkData = chunkData;
-                chunk.CompressedChunkSize = Convert.ToInt16(chunkSize);
-                chunk.DecompressedChunkSize = Convert.ToInt16(chunkSize);
+                chunk.SetData(chunkData, false);
                 ftexsFileChunks.Add(chunk);
                 mipMapDataOffset += chunkSize;
             }

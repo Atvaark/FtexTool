@@ -86,6 +86,7 @@ namespace FtexTool.Ftexs
 
             foreach (var chunk in Chunks)
             {
+                bool writeCompressedChunkData = true;
                 if (absoluteOffset)
                 {
                     chunk.Offset = Convert.ToUInt32(writer.BaseStream.Position);
@@ -93,10 +94,16 @@ namespace FtexTool.Ftexs
                 else
                 {
                     chunk.Offset = DefaultRelativeOffset;
-                    if (chunk.CompressedChunkSize == chunk.DecompressedChunkSize)
+                    if (chunk.ChunkSize == chunk.CompressedChunkSize)
+                    {
                         chunk.Offset = chunk.Offset | UncompressedFlag;
+                        writeCompressedChunkData = false;
+                    }
                 }
-                chunk.WriteData(outputStream);
+                chunk.WriteData(outputStream, writeCompressedChunkData);
+                // TODO: Write 8 zeroes and the next chunk info
+                ////writer.WriteZeros(8);
+                ////writer.WriteZeros(8);
             }
             long endPosition = writer.BaseStream.Position;
             writer.BaseStream.Position = Offset;
