@@ -27,6 +27,10 @@ Converting a .dds file to .ftex:
 FtexTool.exe filename.dds
 ```
 
+Important
+--------
+When repacking custom textures remember to also repack all .pftxs files that contain the changed files.
+
 PftxsTool
 ========
 A tool for unpacking and repacking Fox Engine texture pack (.pftxs) file
