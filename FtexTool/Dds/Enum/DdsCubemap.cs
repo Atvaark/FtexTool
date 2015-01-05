@@ -5,12 +5,42 @@ namespace FtexTool.Dds.Enum
     [Flags]
     public enum DdsCubemap
     {
-        PositiveX = 0x00000600, // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEX
-        NegativeX = 0x00000a00, // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEX
-        PositiveY = 0x00001200, // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEY
-        NegativeY = 0x00002200, // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEY
-        PositiveZ = 0x00004200, // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEZ
-        NegativeZ = 0x00008200, // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEZ
+        /// <summary>
+        ///     DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEX
+        /// </summary>
+        PositiveX = 0x00000600,
+
+        /// <summary>
+        ///     DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEX
+        /// </summary>
+        NegativeX = 0x00000a00,
+
+        /// <summary>
+        ///     DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEY
+        /// </summary>
+        PositiveY = 0x00001200,
+
+        /// <summary>
+        ///     DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEY
+        /// </summary>
+        NegativeY = 0x00002200,
+
+        /// <summary>
+        ///     DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEZ
+        /// </summary>
+        PositiveZ = 0x00004200,
+
+        /// <summary>
+        ///     DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEZ
+        /// </summary>
+        NegativeZ = 0x00008200,
+
+        /// <summary>
+        ///     DDSCAPS2_CUBEMAP |
+        ///     DDSCAPS2_CUBEMAP_POSITIVEX | DDSCAPS2_CUBEMAP_NEGATIVEX |
+        ///     DDSCAPS2_CUBEMAP_POSITIVEY | DDSCAPS2_CUBEMAP_POSITIVEY |
+        ///     DDSCAPS2_CUBEMAP_POSITIVEZ | DDSCAPS2_CUBEMAP_NEGATIVEZ
+        /// </summary>
         AllFaces = PositiveX | NegativeX | PositiveY | NegativeY | PositiveZ | NegativeZ
     }
 }
