@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using FtexTool.Dds;
 using FtexTool.Ftex;
+using FtexTool.Ftex.Enum;
 using FtexTool.Ftexs;
 
 namespace FtexTool
@@ -13,44 +14,130 @@ namespace FtexTool
     {
         private static void Main(string[] args)
         {
-            if (args.Length != 1)
+            FtexToolArguments arguments = ParseArguments(args);
+            if (arguments.Errors.Any())
+            {
+                foreach (var error in arguments.Errors)
+                {
+                    Console.WriteLine(error);
+                }
+                return;
+            }
+            if (arguments.DisplayHelp)
             {
                 ShowUsageInfo();
                 return;
             }
 
-            string path = args[0];
-            FileAttributes attributes = File.GetAttributes(path);
-            if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
+            if (arguments.DirectoryInput)
             {
-                DirectoryInfo fileDirectory = new DirectoryInfo(path);
+                DirectoryInfo fileDirectory = new DirectoryInfo(arguments.InputPath);
                 var files = GetFileList(fileDirectory, true, ".ftex");
                 foreach (var file in files)
                 {
-                    // TODO: Remove the try catch block when all files can be unpacked.
                     try
                     {
-                        UnpackFtexFile(file.FullName);
+                        UnpackFtexFile(file.FullName, arguments.OutputPath);
                     }
                     catch (Exception e)
                     {
-                        Debug.WriteLine("Error extracting: " + file.FullName + " " + e);
+                        Console.WriteLine("Error while unpacking {0}", file.FullName);
                     }
                 }
-                return;
             }
-            if (path.EndsWith(".ftex"))
+            else
             {
-                UnpackFtexFile(path);
-                return;
+                if (arguments.InputPath.EndsWith(".ftex"))
+                {
+                    UnpackFtexFile(arguments.InputPath, arguments.OutputPath);
+                }
+                else if (arguments.InputPath.EndsWith(".dds"))
+                {
+                    PackDdsFile(arguments.InputPath, arguments.OutputPath, arguments.TextureType);
+
+                }
+                else
+                {
+                    Console.WriteLine("Input file is not ending in ftex or dds.");
+                }
             }
-            if (path.EndsWith(".dds"))
-            {
-                PackDdsFile(path);
-                return;
-            }
-            ShowUsageInfo();
         }
+
+
+        private static FtexToolArguments ParseArguments(string[] args)
+        {
+            FtexToolArguments arguments = new FtexToolArguments
+            {
+                DisplayHelp = false,
+                TextureType = FtexTextureType.DiffuseMap,
+                InputPath = "",
+                OutputPath = ""
+            };
+            if (args.Length == 0)
+            {
+                arguments.DisplayHelp = true;
+                return arguments;
+            }
+
+            bool expectType = false;
+            bool expectInput = false;
+            bool expectOutput = false;
+
+            int argIndex = 0;
+            while(argIndex < args.Length)
+            {
+                string arg = args[argIndex];
+                argIndex++;
+                if (expectType)
+                {
+                    arguments.ReadType(arg);
+                    expectType = false;
+                }
+                else if (expectInput)
+                {
+                    arguments.ReadInput(arg);
+                    expectInput = false;
+                }
+                else if (expectOutput)
+                {
+                    arguments.ReadOutput(arg);
+                    expectOutput = false;
+                }
+                else if (arg.StartsWith("-"))
+                {
+                    switch (arg)
+                    {
+                        case "-h":
+                        case "-help":
+                            arguments.DisplayHelp = true;
+                            break;
+                        case "-t":
+                        case "-type":
+                            expectType = true;
+                            break;
+                        case "-i":
+                        case "-input":
+                            expectInput = true;
+                            break;
+                        case "-o":
+                        case "-output":
+                            expectOutput = true;
+                            break;
+                        default:
+                            arguments.Errors.Add("Unknown option" );
+                            break;
+                    }
+                }
+                else
+                {
+                    expectInput = true;
+                    expectOutput = true;
+                    argIndex--;
+                }
+            }
+            return arguments;
+        }
+
 
         private static void ShowUsageInfo()
         {
@@ -58,18 +145,30 @@ namespace FtexTool
                               "Description:\n" +
                               "  Converting between Fox Engine texture (.ftex) and DirectDraw Surface (.dds).\n" +
                               "Usage:\n" +
-                              "  FtexTool.exe directory -Unpacks every ftex file in the directory\n" +
-                              "  FtexTool.exe file.ftex -Unpacks a single ftex file\n" +
-                              "  FtexTool.exe file.dds  -Packs a single dds file");
+                              "  FtexTool [options] input [output]\n" +
+                              "Options:\n" +
+                              "  -h|help  Displays the help message\n" +
+                              "  -t|type  type_name\n" +
+                              "           d|diffuse (default)\n" +
+                              "           m|material\n" +
+                              "           n|normal\n" +
+                              "           c|cube\n" +
+                              "  -i|input file_name|folder_Name\n" +
+                              "  -o|output folder_name\n" + 
+                              "Examples:\n" +
+                              "  FtexTool folder        Unpacks every ftex file in the folder\n" +
+                              "  FtexTool file.ftex     Unpacks an ftex file\n" +
+                              "  FtexTool file.dds      Packs a dds file\n" +
+                              "  FtexTool -t n file.dds Packs a dds file as a normal map\n");
         }
 
-        private static void PackDdsFile(string filePath)
+        private static void PackDdsFile(string filePath, string outputPath, FtexTextureType textureType)
         {
-            string fileDirectory = Path.GetDirectoryName(filePath);
+            string fileDirectory = String.IsNullOrEmpty(outputPath) ? Path.GetDirectoryName(filePath) : outputPath;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
 
             DdsFile ddsFile = GetDdsFile(filePath);
-            FtexFile ftexFile = FtexDdsConverter.ConvertToFtex(ddsFile);
+            FtexFile ftexFile = FtexDdsConverter.ConvertToFtex(ddsFile, textureType);
 
             foreach (var ftexsFile in ftexFile.FtexsFiles)
             {
@@ -97,9 +196,9 @@ namespace FtexTool
             return ddsFile;
         }
 
-        private static void UnpackFtexFile(string filePath)
+        private static void UnpackFtexFile(string filePath, string outputPath)
         {
-            string fileDirectory = Path.GetDirectoryName(filePath);
+            string fileDirectory = String.IsNullOrEmpty(outputPath) ? Path.GetDirectoryName(filePath) : outputPath;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
 
             FtexFile ftexFile = GetFtexFile(filePath);

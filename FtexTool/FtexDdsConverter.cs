@@ -50,7 +50,7 @@ namespace FtexTool
             return result;
         }
 
-        public static FtexFile ConvertToFtex(DdsFile file)
+        public static FtexFile ConvertToFtex(DdsFile file, FtexTextureType textureType)
         {
             FtexFile result = new FtexFile();
             if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfA8R8G8B8()))
@@ -77,12 +77,9 @@ namespace FtexTool
             result.AddFtexsFiles(ftexsFiles);
             result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count());
             result.AdditionalFtexsFileCount = Convert.ToByte(ftexsFiles.Count() - 1);
-
-            // TODO: Check if the texture is not a diffuse map.
-            result.TextureType = FtexTextureType.DiffuseMap;
+            result.TextureType = textureType;
 
             // TODO: Handle the DDS depth flag.
-
             return result;
         }
 

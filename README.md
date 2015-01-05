@@ -11,20 +11,43 @@ SharpZipLib
 
 Usage
 --------
-
-Converting a .ftex file to .dds:
 ```
-FtexTool.exe filename.ftex
+FtexTool [options] input [output_folder]
 ```
 
-Converting all .ftex files in a directory to .dds:
+Options:
 ```
-FtexTool.exe directoryname
+  -h|help  Displays the help message
+  -t|type  type_name
+           d|diffuse (default)
+           m|material
+           n|normal
+           c|cube
+  -i|input file_name|folder_Name
+  -o|output folder_name
+```
+
+Examples
+--------
+
+Converting an .ftex file to .dds:
+```
+FtexTool file_name.ftex
+```
+
+Converting all .ftex files in a folder to .dds:
+```
+FtexTool folder_name
 ```
 
 Converting a .dds file to .ftex:
 ```
-FtexTool.exe filename.dds
+FtexTool file_name.dds
+```
+
+Converting a .dds normalmap file to .ftex
+```
+FtexTool -t n file_name.dds
 ```
 
 Important
