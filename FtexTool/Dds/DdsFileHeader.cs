@@ -68,7 +68,7 @@ namespace FtexTool.Dds
         public bool IsDx10()
         {
             return PixelFormat != null &&
-                   PixelFormat.Flags == DdsPixelFormatFlag.FourCc &&
+                   PixelFormat.Flags.HasFlag(DdsPixelFormatFlag.FourCc) &&
                    PixelFormat.FourCc == DdsPixelFormat.Dx10FourCc;
         }
     }
