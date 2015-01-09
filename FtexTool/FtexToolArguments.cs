@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using FtexTool.Ftex.Enum;
 
@@ -9,21 +8,21 @@ namespace FtexTool
     internal class FtexToolArguments
     {
         private readonly List<string> _errors;
+
+        public FtexToolArguments()
+        {
+            _errors = new List<string>();
+        }
+
         public bool DisplayHelp { get; set; }
         public FtexTextureType TextureType { get; set; }
         public string InputPath { get; set; }
         public bool DirectoryInput { get; set; }
-
         public string OutputPath { get; set; }
 
         public List<string> Errors
         {
             get { return _errors; }
-        } 
-
-        public FtexToolArguments()
-        {
-               _errors =  new List<string>();
         }
 
         public void ReadType(string type)
@@ -65,7 +64,7 @@ namespace FtexTool
                 Errors.Add(string.Format("File/Directory {0} not found", inputPath));
             }
         }
-        
+
         public void ReadOutput(string outputPath)
         {
             OutputPath = outputPath;

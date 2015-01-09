@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using FtexTool.Dds;
@@ -54,7 +53,6 @@ namespace FtexTool
                 else if (arguments.InputPath.EndsWith(".dds"))
                 {
                     PackDdsFile(arguments.InputPath, arguments.OutputPath, arguments.TextureType);
-
                 }
                 else
                 {
@@ -62,7 +60,6 @@ namespace FtexTool
                 }
             }
         }
-
 
         private static FtexToolArguments ParseArguments(string[] args)
         {
@@ -84,7 +81,7 @@ namespace FtexTool
             bool expectOutput = false;
 
             int argIndex = 0;
-            while(argIndex < args.Length)
+            while (argIndex < args.Length)
             {
                 string arg = args[argIndex];
                 argIndex++;
@@ -124,7 +121,7 @@ namespace FtexTool
                             expectOutput = true;
                             break;
                         default:
-                            arguments.Errors.Add("Unknown option" );
+                            arguments.Errors.Add("Unknown option");
                             break;
                     }
                 }
@@ -137,7 +134,6 @@ namespace FtexTool
             }
             return arguments;
         }
-
 
         private static void ShowUsageInfo()
         {
@@ -154,7 +150,7 @@ namespace FtexTool
                               "           n|normal\n" +
                               "           c|cube\n" +
                               "  -i|input file_name|folder_Name\n" +
-                              "  -o|output folder_name\n" + 
+                              "  -o|output folder_name\n" +
                               "Examples:\n" +
                               "  FtexTool folder        Unpacks every ftex file in the folder\n" +
                               "  FtexTool file.ftex     Unpacks an ftex file\n" +
