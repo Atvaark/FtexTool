@@ -195,6 +195,8 @@ namespace FtexTool.Dds
                 return (width*height*pixelFormat.RgbBitCount)/8;
             if (pixelFormat.Equals(DdsPfDxt1()))
                 return ((width*height*32)/8)/8;
+            if (pixelFormat.Equals(DdsPfDxt3()))
+                return ((width*height*32)/4)/8;
             if (pixelFormat.Equals(DdsPfDxt5()))
                 return ((width*height*32)/4)/8;
             throw new NotImplementedException("Could not calculate the image size of the current pixel format.");
@@ -204,6 +206,8 @@ namespace FtexTool.Dds
         {
             if (pixelFormat.Equals(DdsPfDxt1()))
                 return 8;
+            if (pixelFormat.Equals(DdsPfDxt3()))
+                return 16;
             if (pixelFormat.Equals(DdsPfDxt5()))
                 return 16;
             return 4;
@@ -243,6 +247,16 @@ namespace FtexTool.Dds
                 hashCode = (hashCode*397) ^ (int) ABitMask;
                 return hashCode;
             }
+        }
+
+        public override string ToString()
+        {
+            return
+                string.Format(
+                    "Size: {0}, Flags: {1}, FourCc: {2}, RgbBitCount: {3}," +
+                    " RBitMask: {4}, GBitMask: {5}, BBitMask: {6}, ABitMask: {7}",
+                    Size, Flags, FourCc, RgbBitCount, 
+                    RBitMask, GBitMask, BBitMask, ABitMask);
         }
     }
 }

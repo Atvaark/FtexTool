@@ -39,6 +39,9 @@ namespace FtexTool
                 case 2:
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt1();
                     break;
+                case 3:
+                    result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt3(); // HACK: This is just a guess. The value isn't used in the Ground Zeroes files. 
+                    break;
                 case 4:
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt5();
                     break;
@@ -59,6 +62,8 @@ namespace FtexTool
                 result.PixelFormatType = 1;
             else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt1()))
                 result.PixelFormatType = 2;
+            else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt3()))
+                result.PixelFormatType = 3; // HACK: This is just a guess. The value isn't used in the Ground Zeroes files. 
             else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt5()))
                 result.PixelFormatType = 4;
             else
