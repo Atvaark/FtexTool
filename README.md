@@ -52,4 +52,4 @@ FtexTool -t n file_name.dds
 
 Important
 --------
-When repacking custom textures remember to also repack all .pftxs files that contain the changed files.
+When repacking custom textures remember to also repack all .pftxs files that contain the changed files with the [PftxsTool](https://github.com/Atvaark/PftxsTool)
