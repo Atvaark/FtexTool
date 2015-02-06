@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FtexTool.Dds;
+using FtexTool.Exceptions;
 using FtexTool.Ftex;
 using FtexTool.Ftex.Enum;
 using FtexTool.Ftexs;
@@ -232,12 +233,20 @@ namespace FtexTool
             {
                 string ftexsName = String.Format("{0}.{1}.ftexs", fileName, mipMapInfo.FtexsFileNumber);
                 string ftexsFilePath = Path.Combine(fileDirectory, ftexsName);
-                using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Open))
+
+                try
                 {
-                    ftexsStream.Position = mipMapInfo.Offset;
-                    FtexsFile ftexsFile;
-                    ftexFile.TryGetFtexsFile(mipMapInfo.FtexsFileNumber, out ftexsFile);
-                    ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount);
+                    using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Open))
+                    {
+                        ftexsStream.Position = mipMapInfo.Offset;
+                        FtexsFile ftexsFile;
+                        ftexFile.TryGetFtexsFile(mipMapInfo.FtexsFileNumber, out ftexsFile);
+                        ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount);
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new MissingFtexsFileException("The ftexs file " + ftexsName + " could not be found.", e);
                 }
             }
             return ftexFile;

@@ -57,6 +57,8 @@
     <Compile Include="Dds\DdsFile.cs" />
     <Compile Include="Dds\DdsFileHeader.cs" />
     <Compile Include="Dds\DdsPixelFormat.cs" />
+    <Compile Include="Exceptions\FtexToolException.cs" />
+    <Compile Include="Exceptions\MissingFtexsFileException.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="FtexDdsConverter.cs" />
     <Compile Include="Ftexs\FtexsFileMipMap.cs" />
