@@ -16,6 +16,7 @@ FtexTool [options] input [output_folder]
 ```
 
 Options:
+--------
 ```
   -h|help  Displays the help message
   -t|type  type_name
@@ -52,4 +53,5 @@ FtexTool -t n file_name.dds
 
 Important
 --------
-When repacking custom textures remember to also repack all .pftxs files that contain the changed files with the [PftxsTool](https://github.com/Atvaark/PftxsTool)
+* When repacking custom textures remember to also repack all .pftxs files that contain the changed files with the [GzsTool](https://github.com/Atvaark/GzsTool)
+* Fox Engine uses the pixel format DXT1 for textures without alpha channel and DXT5 for textures with alpha channel. Changing the pixel format could lead to unexpected results.
