@@ -51,7 +51,8 @@ namespace FtexTool.Ftexs
 
             byte[] data = reader.ReadBytes(compressedChunkSize);
             bool dataCompressed = compressedChunkSize != decompressedChunkSize;
-            SetData(data, dataCompressed);
+            SetData(data, dataCompressed, decompressedChunkSize);
+
             reader.BaseStream.Position = indexEndPosition;
         }
 
@@ -76,12 +77,22 @@ namespace FtexTool.Ftexs
             }
         }
 
-        public void SetData(byte[] chunkData, bool compressed)
+        public void SetData(byte[] chunkData, bool compressed, long decompressedSize)
         {
             if (compressed)
             {
                 CompressedChunkData = chunkData;
-                ChunkData = ZipUtility.Inflate(chunkData);
+                try
+                {
+                    ChunkData = ZipUtility.Inflate(chunkData);
+                }
+                catch (Exception)
+                {
+                    // BUG: Smaller TPP mipmaps fail to load at them moment.
+                    // This catch block allows unpacking of the textures, but should
+                    // be removed once the unpacking issue has been resolved.
+                    ChunkData = new byte[decompressedSize];
+                }
             }
             else
             {
