@@ -172,7 +172,7 @@ namespace FtexTool.Ftex
                 {
                     FtexFileMipMapInfo ftexMipMapInfo = MipMapInfos.ElementAt(mipMapIndex);
                     ftexMipMapInfo.CompressedFileSize = ftexsFileMipMap.CompressedDataSize;
-                    ftexMipMapInfo.ChunkCount = Convert.ToByte(ftexsFileMipMap.Chunks.Count());
+                    ftexMipMapInfo.ChunkCount = Convert.ToInt16(ftexsFileMipMap.Chunks.Count());
                     ftexMipMapInfo.Offset = ftexsFileMipMap.Offset;
                     ++mipMapIndex;
                 }

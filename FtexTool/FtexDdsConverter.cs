@@ -120,7 +120,7 @@ namespace FtexTool
         private static List<FtexsFileChunk> GetFtexsChunks(FtexFileMipMapInfo mipMapInfo, byte[] mipMapData)
         {
             List<FtexsFileChunk> ftexsFileChunks = new List<FtexsFileChunk>();
-            const int maxChunkSize = short.MaxValue;
+            const int maxChunkSize = short.MaxValue/2 + 1;
             int requiredChunks = (int) Math.Ceiling((double) mipMapData.Length/maxChunkSize);
             int mipMapDataOffset = 0;
             for (int i = 0; i < requiredChunks; i++)
@@ -180,7 +180,9 @@ namespace FtexTool
                 return 3;
             if (fileSize <= 1398128)
                 return 4;
-            return 5;
+            if (fileSize <= 11180000)
+                return 5;
+            return 6;
         }
 
         private static List<byte[]> GetMipMapData(DdsFile file)
