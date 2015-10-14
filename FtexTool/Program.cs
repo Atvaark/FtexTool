@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FtexTool.Dds;
-using FtexTool.Exceptions;
 using FtexTool.Ftex;
 using FtexTool.Ftex.Enum;
 using FtexTool.Ftexs;
@@ -53,7 +52,11 @@ namespace FtexTool
                 }
                 else if (arguments.InputPath.EndsWith(".dds"))
                 {
-                    PackDdsFile(arguments.InputPath, arguments.OutputPath, arguments.TextureType);
+                    PackDdsFile(
+                        arguments.InputPath,
+                        arguments.OutputPath,
+                        arguments.TextureType,
+                        arguments.FtexsFileCount);
                 }
                 else
                 {
@@ -78,6 +81,7 @@ namespace FtexTool
             }
 
             bool expectType = false;
+            bool expectFtexs = false;
             bool expectInput = false;
             bool expectOutput = false;
 
@@ -90,6 +94,11 @@ namespace FtexTool
                 {
                     arguments.ReadType(arg);
                     expectType = false;
+                }
+                else if (expectFtexs)
+                {
+                    arguments.ReadFtexsCount(arg);
+                    expectFtexs = false;
                 }
                 else if (expectInput)
                 {
@@ -112,6 +121,10 @@ namespace FtexTool
                         case "-t":
                         case "-type":
                             expectType = true;
+                            break;
+                        case "-f":
+                        case "-ftexs":
+                            expectFtexs = true;
                             break;
                         case "-i":
                         case "-input":
@@ -150,6 +163,7 @@ namespace FtexTool
                               "           m|material\n" +
                               "           n|normal\n" +
                               "           c|cube\n" +
+                              "  -f|ftexs positive_number\n" +
                               "  -i|input file_name|folder_Name\n" +
                               "  -o|output folder_name\n" +
                               "Examples:\n" +
@@ -159,13 +173,13 @@ namespace FtexTool
                               "  FtexTool -t n file.dds Packs a dds file as a normal map\n");
         }
 
-        private static void PackDdsFile(string filePath, string outputPath, FtexTextureType textureType)
+        private static void PackDdsFile(string filePath, string outputPath, FtexTextureType textureType, int? ftexsFileCount)
         {
             string fileDirectory = String.IsNullOrEmpty(outputPath) ? Path.GetDirectoryName(filePath) : outputPath;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
 
             DdsFile ddsFile = GetDdsFile(filePath);
-            FtexFile ftexFile = FtexDdsConverter.ConvertToFtex(ddsFile, textureType);
+            FtexFile ftexFile = FtexDdsConverter.ConvertToFtex(ddsFile, textureType, ftexsFileCount);
 
             foreach (var ftexsFile in ftexFile.FtexsFiles)
             {
@@ -246,7 +260,6 @@ namespace FtexTool
                 }
                 catch (FileNotFoundException e)
                 {
-                    throw new MissingFtexsFileException("The ftexs file " + ftexsName + " could not be found.", e);
                 }
             }
             return ftexFile;

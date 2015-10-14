@@ -39,9 +39,6 @@ namespace FtexTool
                 case 2:
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt1();
                     break;
-                case 3:
-                    result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt3(); // HACK: This is just a guess. The value isn't used in the Ground Zeroes files. 
-                    break;
                 case 4:
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt5();
                     break;
@@ -53,7 +50,7 @@ namespace FtexTool
             return result;
         }
 
-        public static FtexFile ConvertToFtex(DdsFile file, FtexTextureType textureType)
+        public static FtexFile ConvertToFtex(DdsFile file, FtexTextureType textureType, int? ftexsFileCount)
         {
             FtexFile result = new FtexFile();
             if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfA8R8G8B8()))
@@ -62,9 +59,8 @@ namespace FtexTool
                 result.PixelFormatType = 1;
             else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt1()))
                 result.PixelFormatType = 2;
-            else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt3()))
-                result.PixelFormatType = 3; // HACK: This is just a guess. The value isn't used in the Ground Zeroes files. 
-            else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt5()))
+            else if (file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt3())
+                  || file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt5()))
                 result.PixelFormatType = 4;
             else
                 throw new NotImplementedException(String.Format("Unknown PixelFormatType {0}", file.Header.PixelFormat));
@@ -74,7 +70,7 @@ namespace FtexTool
             result.Depth = Convert.ToInt16(file.Header.Depth);
 
             var mipMapData = GetMipMapData(file);
-            var mipMaps = GetMipMapInfos(mipMapData);
+            var mipMaps = GetMipMapInfos(mipMapData, ftexsFileCount);
             var ftexsFiles = GetFtexsFiles(mipMaps, mipMapData);
             result.MipMapCount = Convert.ToByte(mipMaps.Count());
             result.NrtFlag = 2;
@@ -120,8 +116,8 @@ namespace FtexTool
         private static List<FtexsFileChunk> GetFtexsChunks(FtexFileMipMapInfo mipMapInfo, byte[] mipMapData)
         {
             List<FtexsFileChunk> ftexsFileChunks = new List<FtexsFileChunk>();
-            const int maxChunkSize = short.MaxValue/2 + 1;
-            int requiredChunks = (int) Math.Ceiling((double) mipMapData.Length/maxChunkSize);
+            const int maxChunkSize = short.MaxValue / 2 + 1;
+            int requiredChunks = (int)Math.Ceiling((double)mipMapData.Length / maxChunkSize);
             int mipMapDataOffset = 0;
             for (int i = 0; i < requiredChunks; i++)
             {
@@ -136,7 +132,7 @@ namespace FtexTool
             return ftexsFileChunks;
         }
 
-        private static List<FtexFileMipMapInfo> GetMipMapInfos(List<byte[]> levelData)
+        private static List<FtexFileMipMapInfo> GetMipMapInfos(List<byte[]> levelData, int? ftexsFileCount)
         {
             List<FtexFileMipMapInfo> mipMapsInfos = new List<FtexFileMipMapInfo>();
             for (int i = 0; i < levelData.Count; i++)
@@ -148,28 +144,40 @@ namespace FtexTool
                 mipMapsInfos.Add(mipMapInfo);
             }
 
-            SetMipMapFileNumber(mipMapsInfos);
+            SetFtexsFileNumbers(mipMapsInfos, ftexsFileCount);
             return mipMapsInfos;
         }
 
-        private static void SetMipMapFileNumber(ICollection<FtexFileMipMapInfo> mipMapsInfos)
+        private static void SetFtexsFileNumbers(ICollection<FtexFileMipMapInfo> mipMapsInfos, int? ftexsFileCount)
         {
             if (mipMapsInfos.Count == 1)
             {
                 mipMapsInfos.Single().FtexsFileNumber = 1;
+                return;
+            }
+
+            int currentFtexsFileNumber;
+            if (ftexsFileCount.HasValue)
+            {
+                currentFtexsFileNumber = Math.Min(mipMapsInfos.Count, ftexsFileCount.Value);
             }
             else
             {
-                int fileSize = 0;
-                foreach (var mipMapInfo in mipMapsInfos.OrderBy(m => m.DecompressedFileSize))
+                // Guess the ftexs file count
+                currentFtexsFileNumber = GetFtexsFileCount(mipMapsInfos.Sum(m => m.DecompressedFileSize));
+            }
+
+            foreach (var mipMapInfo in mipMapsInfos)
+            {
+                mipMapInfo.FtexsFileNumber = Convert.ToByte(currentFtexsFileNumber);
+                if (currentFtexsFileNumber > 1)
                 {
-                    fileSize += mipMapInfo.DecompressedFileSize;
-                    mipMapInfo.FtexsFileNumber = GetFtexsFileNumber(fileSize);
+                    currentFtexsFileNumber--;
                 }
             }
         }
 
-        private static byte GetFtexsFileNumber(int fileSize)
+        private static byte GetFtexsFileCount(int fileSize)
         {
             // TODO: Find the correct algorithm.
             if (fileSize <= 21872)
@@ -202,8 +210,8 @@ namespace FtexTool
                 Array.Copy(data, dataOffset, buffer, 0, size);
                 mipMapDatas.Add(buffer);
                 dataOffset += size;
-                width = Math.Max(width/2, minimumWidth);
-                height = Math.Max(height/2, minimumHeight);
+                width = Math.Max(width / 2, minimumWidth);
+                height = Math.Max(height / 2, minimumHeight);
             }
             return mipMapDatas;
         }

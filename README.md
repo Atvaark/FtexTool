@@ -24,6 +24,7 @@ Options:
            m|material
            n|normal
            c|cube
+  -f|ftexs positive_number *Max ftexs file count* 
   -i|input file_name|folder_Name
   -o|output folder_name
 ```
@@ -44,6 +45,11 @@ FtexTool folder_name
 Converting a .dds file to .ftex:
 ```
 FtexTool file_name.dds
+```
+
+Converting a .dds file to an .ftex and 3 .ftexs files:
+```
+FtexTool -f 3 file_name.dds
 ```
 
 Converting a .dds normalmap file to .ftex

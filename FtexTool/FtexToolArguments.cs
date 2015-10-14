@@ -19,6 +19,7 @@ namespace FtexTool
         public string InputPath { get; set; }
         public bool DirectoryInput { get; set; }
         public string OutputPath { get; set; }
+        public int? FtexsFileCount { get; set; }
 
         public List<string> Errors
         {
@@ -68,6 +69,19 @@ namespace FtexTool
         public void ReadOutput(string outputPath)
         {
             OutputPath = outputPath;
+        }
+
+        public void ReadFtexsCount(string ftexsFileCount)
+        {
+            int count;
+            if (int.TryParse(ftexsFileCount, out count) && count > 0)
+            {
+                FtexsFileCount = count;
+            }
+            else
+            {
+                Errors.Add(string.Format("Invalid ftexs file count {0}", ftexsFileCount));
+            }
         }
     }
 }
