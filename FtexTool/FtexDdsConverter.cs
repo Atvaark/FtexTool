@@ -43,7 +43,7 @@ namespace FtexTool
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfDxt5();
                     break;
                 default:
-                    throw new NotImplementedException(String.Format("Unknown PixelFormatType {0}", file.PixelFormatType));
+                    throw new ArgumentException($"Unknown PixelFormatType {file.PixelFormatType}");
             }
 
             result.Data = file.Data;
@@ -63,7 +63,7 @@ namespace FtexTool
                   || file.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfDxt5()))
                 result.PixelFormatType = 4;
             else
-                throw new NotImplementedException(String.Format("Unknown PixelFormatType {0}", file.Header.PixelFormat));
+                throw new ArgumentException($"Unknown PixelFormatType {file.Header.PixelFormat}");
 
             result.Height = Convert.ToInt16(file.Header.Height);
             result.Width = Convert.ToInt16(file.Header.Width);
@@ -72,15 +72,14 @@ namespace FtexTool
             var mipMapData = GetMipMapData(file);
             var mipMaps = GetMipMapInfos(mipMapData, ftexsFileCount);
             var ftexsFiles = GetFtexsFiles(mipMaps, mipMapData);
-            result.MipMapCount = Convert.ToByte(mipMaps.Count());
+            result.MipMapCount = Convert.ToByte(mipMaps.Count);
             result.NrtFlag = 2;
             result.AddMipMapInfos(mipMaps);
             result.AddFtexsFiles(ftexsFiles);
-            result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count());
-            result.AdditionalFtexsFileCount = Convert.ToByte(ftexsFiles.Count() - 1);
+            result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count);
+            result.AdditionalFtexsFileCount = Convert.ToByte(ftexsFiles.Count - 1);
+            result.UnknownFlags = 273; // TODO: Add an argument to set this value.
             result.TextureType = textureType;
-
-            // TODO: Handle the DDS depth flag.
             return result;
         }
 
@@ -106,14 +105,14 @@ namespace FtexTool
                 FtexsFile ftexsFile = ftexsFiles[mipMapInfo.FtexsFileNumber];
                 byte[] mipMapData = mipMapDatas[i];
                 FtexsFileMipMap ftexsFileMipMap = new FtexsFileMipMap();
-                List<FtexsFileChunk> chunks = GetFtexsChunks(mipMapInfo, mipMapData);
+                List<FtexsFileChunk> chunks = GetFtexsChunks(mipMapData);
                 ftexsFileMipMap.AddChunks(chunks);
                 ftexsFile.AddMipMap(ftexsFileMipMap);
             }
             return ftexsFiles.Values.ToList();
         }
 
-        private static List<FtexsFileChunk> GetFtexsChunks(FtexFileMipMapInfo mipMapInfo, byte[] mipMapData)
+        private static List<FtexsFileChunk> GetFtexsChunks(byte[] mipMapData)
         {
             List<FtexsFileChunk> ftexsFileChunks = new List<FtexsFileChunk>();
             const int maxChunkSize = short.MaxValue / 2 + 1;
@@ -125,7 +124,7 @@ namespace FtexTool
                 int chunkSize = Math.Min(mipMapData.Length - mipMapDataOffset, maxChunkSize);
                 byte[] chunkData = new byte[chunkSize];
                 Array.Copy(mipMapData, mipMapDataOffset, chunkData, 0, chunkSize);
-                chunk.SetData(chunkData, false, chunkSize);
+                chunk.SetData(chunkData, false, true);
                 ftexsFileChunks.Add(chunk);
                 mipMapDataOffset += chunkSize;
             }

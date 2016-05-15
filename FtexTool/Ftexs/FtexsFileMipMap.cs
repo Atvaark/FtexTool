@@ -8,14 +8,14 @@ namespace FtexTool.Ftexs
 {
     public class FtexsFileMipMap
     {
-        private const int DefaultRelativeOffset = 8;
-        private const uint UncompressedFlag = 0x80000000;
         private readonly List<FtexsFileChunk> _chunks;
 
         public FtexsFileMipMap()
         {
             _chunks = new List<FtexsFileChunk>();
         }
+
+        public int Alignment { get; set; }
 
         public IEnumerable<FtexsFileChunk> Chunks
         {
@@ -37,29 +37,31 @@ namespace FtexTool.Ftexs
 
         public int CompressedDataSize
         {
-            get { return Chunks.Sum(chunk => chunk.CompressedChunkSize); }
+            get
+            {
+                return Chunks.Sum(chunk => chunk.CompressedChunkSize);
+            }
         }
 
         public int IndexBlockSize
         {
-            get { return FtexsFileChunk.IndexSize*_chunks.Count; }
+            get { return FtexsFileChunk.IndexSize * _chunks.Count; }
         }
 
-        public int Offset { get; set; }
+        public uint Offset { get; set; }
 
-        public static FtexsFileMipMap ReadFtexsFileMipMap(Stream inputStream, short chunkCount)
+        public static FtexsFileMipMap ReadFtexsFileMipMap(Stream inputStream, short chunkCount, int baseOffset)
         {
             FtexsFileMipMap result = new FtexsFileMipMap();
-            result.Read(inputStream, chunkCount);
+            result.Read(inputStream, chunkCount, baseOffset);
             return result;
         }
 
-        public void Read(Stream inputStream, short chunkCount)
+        public void Read(Stream inputStream, short chunkCount, int baseOffset)
         {
-            bool absoluteOffseta = chunkCount != 1;
             for (int i = 0; i < chunkCount; i++)
             {
-                FtexsFileChunk chunk = FtexsFileChunk.ReadFtexsFileChunk(inputStream, absoluteOffseta);
+                FtexsFileChunk chunk = FtexsFileChunk.ReadFtexsFileChunk(inputStream, baseOffset);
                 AddChunk(chunk);
             }
         }
@@ -80,37 +82,38 @@ namespace FtexTool.Ftexs
         public void Write(Stream outputStream)
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
-            bool absoluteOffset = Chunks.Count() != 1;
-            Offset = Convert.ToInt32(writer.BaseStream.Position);
+
+            Offset = Convert.ToUInt32(writer.BaseStream.Position);
             writer.BaseStream.Position += IndexBlockSize;
 
             foreach (var chunk in Chunks)
             {
                 bool writeCompressedChunkData = true;
-                if (absoluteOffset)
+                // TODO: Only for the final x chunks?
+                if (Chunks.Count() == 1 && chunk.ChunkSize <= chunk.CompressedChunkSize)
                 {
-                    chunk.Offset = Convert.ToUInt32(writer.BaseStream.Position);
+                    chunk.Offset = FtexsFileChunk.IndexSize | FtexsFileChunk.RelativeOffsetValue;
+                    writeCompressedChunkData = false;
                 }
                 else
                 {
-                    chunk.Offset = DefaultRelativeOffset;
-                    if (chunk.ChunkSize == chunk.CompressedChunkSize)
-                    {
-                        chunk.Offset = chunk.Offset | UncompressedFlag;
-                        writeCompressedChunkData = false;
-                    }
+                    chunk.Offset = Convert.ToUInt32(writer.BaseStream.Position) - Offset;
                 }
+
                 chunk.WriteData(outputStream, writeCompressedChunkData);
-                // TODO: Write 8 zeroes and the next chunk info
-                ////writer.WriteZeros(8);
-                ////writer.WriteZeros(8);
             }
+
+            Alignment = writer.Align(16);
+            // TODO: Write the next chunk info(s) (for streaming?)
+            writer.WriteZeros(8);
+
             long endPosition = writer.BaseStream.Position;
             writer.BaseStream.Position = Offset;
             foreach (var chunk in Chunks)
             {
-                chunk.Write(outputStream);
+                chunk.WriteIndex(outputStream);
             }
+
             writer.BaseStream.Position = endPosition;
         }
     }

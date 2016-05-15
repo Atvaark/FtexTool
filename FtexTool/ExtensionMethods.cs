@@ -27,10 +27,23 @@ namespace FtexTool
 
         private static T ReadValue<T>(BinaryReader reader) where T : struct
         {
-            int size = SizeOf(typeof (T));
+            int size = SizeOf(typeof(T));
             byte[] data = reader.ReadBytes(size);
             T actual = ByteArrayToStructure<T>(data);
             return actual;
+        }
+
+        internal static int Align(this BinaryWriter writer, int alignment)
+        {
+            int alignmentRequired = (int)(writer.BaseStream.Position % alignment);
+            if (alignmentRequired > 0)
+            {
+                int bytesToAdd = alignment - alignmentRequired;
+                writer.BaseStream.Position += bytesToAdd;
+                return bytesToAdd;
+            }
+
+            return 0;
         }
 
         internal static int SizeOf(this Type type)
@@ -41,7 +54,7 @@ namespace FtexTool
         private static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
             GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-            T stuff = (T) Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof (T));
+            T stuff = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
             handle.Free();
             return stuff;
         }

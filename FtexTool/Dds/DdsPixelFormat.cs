@@ -192,14 +192,14 @@ namespace FtexTool.Dds
         public static int CalculateImageSize(DdsPixelFormat pixelFormat, int width, int height)
         {
             if (pixelFormat.RgbBitCount > 0)
-                return (width*height*pixelFormat.RgbBitCount)/8;
+                return (width * height * pixelFormat.RgbBitCount) / 8;
             if (pixelFormat.Equals(DdsPfDxt1()))
-                return ((width*height*32)/8)/8;
+                return width * height / 2; // ((width*height*32)/8)/8;
             if (pixelFormat.Equals(DdsPfDxt3()))
-                return ((width*height*32)/4)/8;
+                return width * height; // ((width*height*32)/4)/8;
             if (pixelFormat.Equals(DdsPfDxt5()))
-                return ((width*height*32)/4)/8;
-            throw new NotImplementedException("Could not calculate the image size of the current pixel format.");
+                return width * height; // ((width*height*32)/4)/8;
+            throw new ArgumentException("Could not calculate the image size of the current pixel format.");
         }
 
         public static int GetMinimumImageSize(DdsPixelFormat pixelFormat)

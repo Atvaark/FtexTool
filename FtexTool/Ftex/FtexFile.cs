@@ -11,10 +11,8 @@ namespace FtexTool.Ftex
     public class FtexFile
     {
         private const long MagicNumber1 = 4612226451348214854; // FTEX 85 EB 01 40
-        private const int MagicNumber2 = 0x01000001;
         private const int OneInt32 = 1;
         private const int ZeroInt32 = 0;
-        private const byte OneByte = 1;
         private const byte ZeroByte = 0;
         private readonly Dictionary<int, FtexsFile> _ftexsFiles;
         private readonly List<FtexFileMipMapInfo> _mipMapInfos;
@@ -36,7 +34,9 @@ namespace FtexTool.Ftex
         // 0x2 else
         public byte NrtFlag { get; set; }
         // Flags
-        // 0 or 17
+        // 0   (~3%)
+        // 17  (<1%)
+        // 273 (~96%)
         public short UnknownFlags { get; set; }
         public FtexTextureType TextureType { get; set; }
         public byte FtexsFileCount { get; set; }
@@ -171,9 +171,11 @@ namespace FtexTool.Ftex
                 foreach (var ftexsFileMipMap in ftexsFile.MipMaps)
                 {
                     FtexFileMipMapInfo ftexMipMapInfo = MipMapInfos.ElementAt(mipMapIndex);
-                    ftexMipMapInfo.CompressedFileSize = ftexsFileMipMap.CompressedDataSize;
+                    ftexMipMapInfo.Size = ftexsFileMipMap.IndexBlockSize
+                                            + ftexsFileMipMap.CompressedDataSize
+                                            + ftexsFileMipMap.Alignment;
                     ftexMipMapInfo.ChunkCount = Convert.ToInt16(ftexsFileMipMap.Chunks.Count());
-                    ftexMipMapInfo.Offset = ftexsFileMipMap.Offset;
+                    ftexMipMapInfo.Offset = (int) ftexsFileMipMap.Offset;
                     ++mipMapIndex;
                 }
             }

@@ -7,7 +7,7 @@ namespace FtexTool.Ftexs
     public class FtexsFileChunk
     {
         public const int IndexSize = 8;
-        private const int OffsetBitMask = 0xFFFF;
+        public const uint RelativeOffsetValue = 0x80000000;
 
         public short CompressedChunkSize
         {
@@ -23,40 +23,39 @@ namespace FtexTool.Ftexs
         public byte[] ChunkData { get; private set; }
         public byte[] CompressedChunkData { get; private set; }
 
-        public static FtexsFileChunk ReadFtexsFileChunk(Stream inputStream, bool absoluteOffset)
+        public static FtexsFileChunk ReadFtexsFileChunk(Stream inputStream, int baseOffset)
         {
             FtexsFileChunk result = new FtexsFileChunk();
-            result.Read(inputStream, absoluteOffset);
+            result.Read(inputStream, baseOffset);
             return result;
         }
 
-        public void Read(Stream inputStream, bool absoluteOffset)
+        public void Read(Stream inputStream, int baseOffset)
         {
-            BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
+            BinaryReader reader = new BinaryReader(inputStream, Encoding.ASCII, true);
             short compressedChunkSize = reader.ReadInt16();
             short decompressedChunkSize = reader.ReadInt16();
             Offset = reader.ReadUInt32();
 
             long indexEndPosition = reader.BaseStream.Position;
 
-            if (absoluteOffset)
+            if (Offset > RelativeOffsetValue)
             {
-                reader.BaseStream.Position = Offset;
+                reader.BaseStream.Position = baseOffset + (Offset - RelativeOffsetValue);
             }
             else
             {
-                // HACK: result.Offset could be 0x80000008
-                reader.BaseStream.Position = indexEndPosition + (Offset & OffsetBitMask) - IndexSize;
+                reader.BaseStream.Position = baseOffset + Offset;
             }
 
             byte[] data = reader.ReadBytes(compressedChunkSize);
             bool dataCompressed = compressedChunkSize != decompressedChunkSize;
-            SetData(data, dataCompressed, decompressedChunkSize);
+            SetData(data, dataCompressed, false);
 
             reader.BaseStream.Position = indexEndPosition;
         }
 
-        public void Write(Stream outputStream)
+        public void WriteIndex(Stream outputStream)
         {
             BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
             writer.Write(CompressedChunkSize);
@@ -77,26 +76,27 @@ namespace FtexTool.Ftexs
             }
         }
 
-        public void SetData(byte[] chunkData, bool compressed, long decompressedSize)
+        public void SetData(byte[] chunkData, bool compressed, bool forWriting)
         {
+            // TODO: Refactor this whole method.
+            // - Only keep the uncompressed in memory.
             if (compressed)
             {
                 CompressedChunkData = chunkData;
-                try
-                {
-                    ChunkData = ZipUtility.Inflate(chunkData);
-                }
-                catch (Exception)
-                {
-                    // BUG: Smaller TPP mipmaps fail to load at them moment.
-                    // This catch block allows unpacking of the textures, but should
-                    // be removed once the unpacking issue has been resolved.
-                    ChunkData = new byte[decompressedSize];
-                }
+                ChunkData = ZipUtility.Inflate(chunkData);
             }
             else
             {
-                CompressedChunkData = ZipUtility.Deflate(chunkData);
+                byte[] compressedChunkData = ZipUtility.Deflate(chunkData);
+                if (forWriting && compressedChunkData.Length >= chunkData.Length)
+                {
+                    CompressedChunkData = chunkData;
+                }
+                else
+                {
+                    CompressedChunkData = compressedChunkData;
+                }
+
                 ChunkData = chunkData;
             }
         }

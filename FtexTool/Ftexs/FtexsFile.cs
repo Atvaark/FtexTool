@@ -32,15 +32,10 @@ namespace FtexTool.Ftexs
                 return stream.ToArray();
             }
         }
-
-        public int CompressedDataSize
+        
+        public void Read(Stream inputStream, short chunkCount, int baseOffset)
         {
-            get { return MipMaps.Sum(mipMap => mipMap.CompressedDataSize); }
-        }
-
-        public void Read(Stream inputStream, short chunkCount)
-        {
-            FtexsFileMipMap mipMap = FtexsFileMipMap.ReadFtexsFileMipMap(inputStream, chunkCount);
+            FtexsFileMipMap mipMap = FtexsFileMipMap.ReadFtexsFileMipMap(inputStream, chunkCount, baseOffset);
             AddMipMap(mipMap);
         }
 
