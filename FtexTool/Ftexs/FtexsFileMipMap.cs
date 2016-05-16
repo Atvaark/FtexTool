@@ -32,7 +32,7 @@ namespace FtexTool.Ftexs
             }
         }
         
-        private int IndexBlockSize => FtexsFileChunk.IndexSize * _chunks.Count;
+        private int IndexBlockSize => FtexsFileChunkIndex.IndexSize * _chunks.Count;
 
         public uint BaseOffset { get; private set; }
 
@@ -81,7 +81,7 @@ namespace FtexTool.Ftexs
             writer.BaseStream.Position += IndexBlockSize;
             foreach (var chunk in Chunks)
             {
-                chunk.PrepareWrite(outputStream, baseOffset: BaseOffset, isSingleChunk: Chunks.Count() == 1);
+                chunk.UpdateDataOffset(outputStream, baseOffset: BaseOffset, isSingleChunk: Chunks.Count() == 1);
                 chunk.WriteData(outputStream);
             }
 

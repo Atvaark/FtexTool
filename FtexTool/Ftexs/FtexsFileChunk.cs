@@ -6,23 +6,11 @@ namespace FtexTool.Ftexs
 {
     public class FtexsFileChunk
     {
-        public const int IndexSize = 8;
-
-        private const uint RelativeOffsetValue = 0x80000000;
-
-        public short WrittenChunkSize => CompressData ? CompressedChunkSize : ChunkSize;
-
-        private short CompressedChunkSize { get; set; }
-
-        private short ChunkSize { get; set; }
-
-        private long DataOffset { get; set; }
-
-        private uint EncodedDataOffset { get; set; }
+        public short WrittenChunkSize => _index.WrittenChunkSize;
 
         private byte[] ChunkData { get; set; }
 
-        private bool CompressData { get; set; }
+        private readonly FtexsFileChunkIndex _index = new FtexsFileChunkIndex();
         
         public static FtexsFileChunk ReadFtexsFileChunk(Stream inputStream, int baseOffset)
         {
@@ -34,74 +22,51 @@ namespace FtexTool.Ftexs
         public void Read(Stream inputStream, int baseOffset)
         {
             BinaryReader reader = new BinaryReader(inputStream, Encoding.ASCII, true);
-            CompressedChunkSize = reader.ReadInt16();
-            ChunkSize = reader.ReadInt16();
-            EncodedDataOffset = reader.ReadUInt32();
 
+            _index.Read(reader, baseOffset);
             long indexEndPosition = reader.BaseStream.Position;
-            if (EncodedDataOffset > RelativeOffsetValue)
-            {
-                DataOffset = baseOffset + (EncodedDataOffset - RelativeOffsetValue);
-            }
-            else
-            {
-                DataOffset = baseOffset + EncodedDataOffset;
-            }
 
-            reader.BaseStream.Position = DataOffset;
-            byte[] data = reader.ReadBytes(CompressedChunkSize);
-            bool compressed = CompressedChunkSize != ChunkSize;
+            reader.BaseStream.Position = _index.DataOffset;
+            byte[] data = reader.ReadBytes(_index.CompressedChunkSize);
+            bool compressed = _index.CompressedChunkSize != _index.ChunkSize;
             SetData(data, compressed);
 
             reader.BaseStream.Position = indexEndPosition;
         }
-
-        public void WriteIndex(BinaryWriter writer)
-        {
-            writer.Write(CompressData ? CompressedChunkSize : ChunkSize);
-            writer.Write(ChunkSize);
-            writer.Write(EncodedDataOffset);
-        }
-
-        public void WriteData(Stream outputStream)
-        {
-            outputStream.Position = DataOffset;
-            byte[] chunkData = CompressData ? ZipUtility.Deflate(ChunkData) : ChunkData;
-            outputStream.Write(chunkData, 0, chunkData.Length);
-        }
-
-        public void PrepareWrite(Stream outputStream, uint baseOffset, bool isSingleChunk)
-        {
-            DataOffset = outputStream.Position;
-
-            CompressData = true;
-            if (isSingleChunk && ChunkSize <= CompressedChunkSize)
-            {
-                EncodedDataOffset = IndexSize | RelativeOffsetValue;
-                CompressData = false;
-            }
-            else
-            {
-                EncodedDataOffset = Convert.ToUInt32(outputStream.Position) - baseOffset;
-            }
-        }
-
+        
         public void SetData(byte[] chunkData, bool compressed)
         {
             if (compressed)
             {
                 ChunkData = ZipUtility.Inflate(chunkData);
 
-                ChunkSize = Convert.ToInt16(ChunkData.Length);
-                CompressedChunkSize = Convert.ToInt16(chunkData.Length);
+                _index.ChunkSize = Convert.ToInt16(ChunkData.Length);
+                _index.CompressedChunkSize = Convert.ToInt16(chunkData.Length);
             }
             else
             {
                 ChunkData = chunkData;
 
-                ChunkSize = Convert.ToInt16(chunkData.Length);
-                CompressedChunkSize = Convert.ToInt16(ZipUtility.Deflate(chunkData).Length);
+                _index.ChunkSize = Convert.ToInt16(chunkData.Length);
+                _index.CompressedChunkSize = Convert.ToInt16(ZipUtility.Deflate(chunkData).Length);
             }
+        }
+
+        public void WriteData(Stream outputStream)
+        {
+            outputStream.Position = _index.DataOffset;
+            byte[] chunkData = _index.CompressData ? ZipUtility.Deflate(ChunkData) : ChunkData;
+            outputStream.Write(chunkData, 0, chunkData.Length);
+        }
+
+        public void UpdateDataOffset(Stream outputStream, uint baseOffset, bool isSingleChunk)
+        {
+            _index.SetDataOffset(outputStream, baseOffset, isSingleChunk);
+        }
+
+        public void WriteIndex(BinaryWriter writer)
+        {
+            _index.Write(writer);
         }
 
         public void CopyTo(Stream stream)

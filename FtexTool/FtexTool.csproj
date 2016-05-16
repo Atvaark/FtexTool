@@ -76,6 +76,7 @@
     <Compile Include="Exceptions\MissingFtexsFileException.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="FtexDdsConverter.cs" />
+    <Compile Include="Ftexs\FtexsFileChunkIndex.cs" />
     <Compile Include="Ftexs\FtexsFileMipMap.cs" />
     <Compile Include="FtexToolArguments.cs" />
     <Compile Include="Ftex\Enum\FtexTextureType.cs" />
