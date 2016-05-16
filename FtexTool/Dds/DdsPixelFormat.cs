@@ -192,7 +192,7 @@ namespace FtexTool.Dds
         public static int CalculateImageSize(DdsPixelFormat pixelFormat, int width, int height)
         {
             if (pixelFormat.RgbBitCount > 0)
-                return (width * height * pixelFormat.RgbBitCount) / 8;
+                return (int)((long)width * height * pixelFormat.RgbBitCount / 8);
             if (pixelFormat.Equals(DdsPfDxt1()))
                 return width * height / 2; // ((width*height*32)/8)/8;
             if (pixelFormat.Equals(DdsPfDxt3()))

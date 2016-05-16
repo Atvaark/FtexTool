@@ -165,6 +165,7 @@ namespace FtexTool
             {
                 // Guess the ftexs file count
                 currentFtexsFileNumber = GetFtexsFileCount(mipMapsInfos.Sum(m => m.DecompressedFileSize));
+                currentFtexsFileNumber = Math.Min(currentFtexsFileNumber, mipMapsInfos.Count);
             }
 
             foreach (var mipMapInfo in mipMapsInfos)

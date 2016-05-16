@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FtexTool.Dds;
+using FtexTool.Exceptions;
 using FtexTool.Ftex;
 using FtexTool.Ftex.Enum;
 using FtexTool.Ftexs;
 
 namespace FtexTool
 {
-    internal static class Program
+    public static class Program
     {
-        private static void Main(string[] args)
+        public static void Main(string[] args)
         {
             FtexToolArguments arguments = FtexToolArguments.Parse(args);
             if (arguments.Errors.Any())
@@ -64,7 +65,7 @@ namespace FtexTool
                 }
             }
         }
-        
+
         private static void ShowUsageInfo()
         {
             Console.WriteLine("FtexTool by Atvaark\n" +
@@ -171,16 +172,19 @@ namespace FtexTool
             {
                 string ftexsName = $"{fileName}.{mipMapInfo.FtexsFileNumber}.ftexs";
                 string ftexsFilePath = Path.Combine(fileDirectory, ftexsName);
-
-                if (File.Exists(ftexsFilePath))
+                FtexsFile ftexsFile;
+                if (ftexFile.TryGetFtexsFile(mipMapInfo.FtexsFileNumber, out ftexsFile)
+                    && File.Exists(ftexsFilePath))
                 {
                     using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Open))
                     {
                         ftexsStream.Position = mipMapInfo.Offset;
-                        FtexsFile ftexsFile;
-                        ftexFile.TryGetFtexsFile(mipMapInfo.FtexsFileNumber, out ftexsFile);
                         ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount, mipMapInfo.Offset);
                     }
+                }
+                else
+                {
+                    throw new MissingFtexsFileException($"{ftexsName} not found");
                 }
             }
             return ftexFile;
