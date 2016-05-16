@@ -1,5 +1,7 @@
 FtexTool
 ========
+[![Build status](https://ci.appveyor.com/api/projects/status/fyes86rw8kb6xcj5?svg=true)](https://ci.appveyor.com/project/Atvaark/ftextool)
+
 A tool for converting files between Fox Engine texture (.ftex) and DirectDraw Surface (.dds).
 
 Requirements

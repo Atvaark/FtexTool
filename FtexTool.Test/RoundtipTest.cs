@@ -341,7 +341,7 @@ namespace FtexTool.Test
             RunDdsTestCase(testCases);
         }
 
-        [Fact(Skip = "Use TestAllUsedCombinations instead.")]
+        [Fact(Skip = "Use the data driven test instead.")]
         public void TestLuminance()
         {
             DdsTestCase[] testCases = {

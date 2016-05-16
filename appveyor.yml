@@ -1,0 +1,5 @@
+version: CI.{build}
+before_build:
+- cmd: nuget restore -verbosity quiet
+build:
+  verbosity: minimal
