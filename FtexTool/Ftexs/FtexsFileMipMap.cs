@@ -15,12 +15,9 @@ namespace FtexTool.Ftexs
             _chunks = new List<FtexsFileChunk>();
         }
 
-        public int Alignment { get; set; }
+        public int Alignment { get; private set; }
 
-        public IEnumerable<FtexsFileChunk> Chunks
-        {
-            get { return _chunks; }
-        }
+        public IEnumerable<FtexsFileChunk> Chunks => _chunks;
 
         public byte[] Data
         {
@@ -29,26 +26,23 @@ namespace FtexTool.Ftexs
                 MemoryStream stream = new MemoryStream();
                 foreach (var chunk in Chunks)
                 {
-                    stream.Write(chunk.ChunkData, 0, chunk.ChunkData.Length);
+                    chunk.CopyTo(stream);
                 }
                 return stream.ToArray();
             }
         }
+        
+        private int IndexBlockSize => FtexsFileChunk.IndexSize * _chunks.Count;
 
-        public int CompressedDataSize
+        public uint BaseOffset { get; private set; }
+
+        public int BlockSize
         {
             get
             {
-                return Chunks.Sum(chunk => chunk.CompressedChunkSize);
+                return IndexBlockSize + Chunks.Sum(chunk => chunk.WrittenChunkSize) + Alignment;
             }
         }
-
-        public int IndexBlockSize
-        {
-            get { return FtexsFileChunk.IndexSize * _chunks.Count; }
-        }
-
-        public uint Offset { get; set; }
 
         public static FtexsFileMipMap ReadFtexsFileMipMap(Stream inputStream, short chunkCount, int baseOffset)
         {
@@ -81,26 +75,14 @@ namespace FtexTool.Ftexs
 
         public void Write(Stream outputStream)
         {
-            BinaryWriter writer = new BinaryWriter(outputStream, Encoding.Default, true);
-
-            Offset = Convert.ToUInt32(writer.BaseStream.Position);
+            BinaryWriter writer = new BinaryWriter(outputStream, Encoding.ASCII, true);
+            BaseOffset = Convert.ToUInt32(writer.BaseStream.Position);
+            
             writer.BaseStream.Position += IndexBlockSize;
-
             foreach (var chunk in Chunks)
             {
-                bool writeCompressedChunkData = true;
-                // TODO: Only for the final x chunks?
-                if (Chunks.Count() == 1 && chunk.ChunkSize <= chunk.CompressedChunkSize)
-                {
-                    chunk.Offset = FtexsFileChunk.IndexSize | FtexsFileChunk.RelativeOffsetValue;
-                    writeCompressedChunkData = false;
-                }
-                else
-                {
-                    chunk.Offset = Convert.ToUInt32(writer.BaseStream.Position) - Offset;
-                }
-
-                chunk.WriteData(outputStream, writeCompressedChunkData);
+                chunk.PrepareWrite(outputStream, baseOffset: BaseOffset, isSingleChunk: Chunks.Count() == 1);
+                chunk.WriteData(outputStream);
             }
 
             Alignment = writer.Align(16);
@@ -108,10 +90,11 @@ namespace FtexTool.Ftexs
             writer.WriteZeros(8);
 
             long endPosition = writer.BaseStream.Position;
-            writer.BaseStream.Position = Offset;
+
+            writer.BaseStream.Position = BaseOffset;
             foreach (var chunk in Chunks)
             {
-                chunk.WriteIndex(outputStream);
+                chunk.WriteIndex(writer);
             }
 
             writer.BaseStream.Position = endPosition;

@@ -251,12 +251,8 @@ namespace FtexTool.Dds
 
         public override string ToString()
         {
-            return
-                string.Format(
-                    "Size: {0}, Flags: {1}, FourCc: {2}, RgbBitCount: {3}," +
-                    " RBitMask: {4}, GBitMask: {5}, BBitMask: {6}, ABitMask: {7}",
-                    Size, Flags, FourCc, RgbBitCount, 
-                    RBitMask, GBitMask, BBitMask, ABitMask);
+            return $"Size: {Size}, Flags: {Flags}, FourCc: {FourCc}, RgbBitCount: {RgbBitCount}," +
+                   $" RBitMask: {RBitMask}, GBitMask: {GBitMask}, BBitMask: {BBitMask}, ABitMask: {ABitMask}";
         }
     }
 }

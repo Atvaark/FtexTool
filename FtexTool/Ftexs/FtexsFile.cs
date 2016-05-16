@@ -13,10 +13,7 @@ namespace FtexTool.Ftexs
             _mipMaps = new List<FtexsFileMipMap>();
         }
 
-        public IEnumerable<FtexsFileMipMap> MipMaps
-        {
-            get { return _mipMaps; }
-        }
+        public IEnumerable<FtexsFileMipMap> MipMaps => _mipMaps;
 
         public byte FileNumber { get; set; }
 
@@ -46,7 +43,8 @@ namespace FtexTool.Ftexs
 
         public void Write(Stream outputStream)
         {
-            foreach (var mipMap in MipMaps.Reverse())
+            var mipMaps = MipMaps.Reverse().ToList();
+            foreach (var mipMap in mipMaps)
             {
                 mipMap.Write(outputStream);
             }

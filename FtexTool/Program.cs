@@ -13,7 +13,7 @@ namespace FtexTool
     {
         private static void Main(string[] args)
         {
-            FtexToolArguments arguments = ParseArguments(args);
+            FtexToolArguments arguments = FtexToolArguments.Parse(args);
             if (arguments.Errors.Any())
             {
                 foreach (var error in arguments.Errors)
@@ -46,7 +46,7 @@ namespace FtexTool
             }
             else
             {
-                if (arguments.InputPath.EndsWith(".ftex"))
+                if (arguments.InputPath.EndsWith(".ftex", StringComparison.OrdinalIgnoreCase))
                 {
                     UnpackFtexFile(arguments.InputPath, arguments.OutputPath);
                 }
@@ -64,91 +64,7 @@ namespace FtexTool
                 }
             }
         }
-
-        private static FtexToolArguments ParseArguments(string[] args)
-        {
-            FtexToolArguments arguments = new FtexToolArguments
-            {
-                DisplayHelp = false,
-                TextureType = FtexTextureType.DiffuseMap,
-                InputPath = "",
-                OutputPath = ""
-            };
-            if (args.Length == 0)
-            {
-                arguments.DisplayHelp = true;
-                return arguments;
-            }
-
-            bool expectType = false;
-            bool expectFtexs = false;
-            bool expectInput = false;
-            bool expectOutput = false;
-
-            int argIndex = 0;
-            while (argIndex < args.Length)
-            {
-                string arg = args[argIndex];
-                argIndex++;
-                if (expectType)
-                {
-                    arguments.ReadType(arg);
-                    expectType = false;
-                }
-                else if (expectFtexs)
-                {
-                    arguments.ReadFtexsCount(arg);
-                    expectFtexs = false;
-                }
-                else if (expectInput)
-                {
-                    arguments.ReadInput(arg);
-                    expectInput = false;
-                }
-                else if (expectOutput)
-                {
-                    arguments.ReadOutput(arg);
-                    expectOutput = false;
-                }
-                else if (arg.StartsWith("-"))
-                {
-                    switch (arg)
-                    {
-                        case "-h":
-                        case "-help":
-                            arguments.DisplayHelp = true;
-                            break;
-                        case "-t":
-                        case "-type":
-                            expectType = true;
-                            break;
-                        case "-f":
-                        case "-ftexs":
-                            expectFtexs = true;
-                            break;
-                        case "-i":
-                        case "-input":
-                            expectInput = true;
-                            break;
-                        case "-o":
-                        case "-output":
-                            expectOutput = true;
-                            break;
-                        default:
-                            arguments.Errors.Add("Unknown option");
-                            break;
-                    }
-                }
-                else
-                {
-                    expectInput = true;
-                    expectOutput = true;
-                    argIndex--;
-                }
-            }
-            return arguments;
-        }
-
+        
         private static void ShowUsageInfo()
         {
             Console.WriteLine("FtexTool by Atvaark\n" +
@@ -183,7 +99,7 @@ namespace FtexTool
 
             foreach (var ftexsFile in ftexFile.FtexsFiles)
             {
-                string ftexsFileName = String.Format("{0}.{1}.ftexs", fileName, ftexsFile.FileNumber);
+                string ftexsFileName = $"{fileName}.{ftexsFile.FileNumber}.ftexs";
                 string ftexsFilePath = Path.Combine(fileDirectory, ftexsFileName);
 
                 using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Create))
@@ -194,7 +110,7 @@ namespace FtexTool
 
             ftexFile.UpdateOffsets();
 
-            string ftexFileName = String.Format("{0}.ftex", fileName);
+            string ftexFileName = $"{fileName}.ftex";
             string ftexFilePath = Path.Combine(fileDirectory, ftexFileName);
 
             using (FileStream ftexStream = new FileStream(ftexFilePath, FileMode.Create))
@@ -253,7 +169,7 @@ namespace FtexTool
 
             foreach (var mipMapInfo in ftexFile.MipMapInfos)
             {
-                string ftexsName = String.Format("{0}.{1}.ftexs", fileName, mipMapInfo.FtexsFileNumber);
+                string ftexsName = $"{fileName}.{mipMapInfo.FtexsFileNumber}.ftexs";
                 string ftexsFilePath = Path.Combine(fileDirectory, ftexsName);
 
                 if (File.Exists(ftexsFilePath))

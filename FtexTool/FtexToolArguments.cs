@@ -7,23 +7,107 @@ namespace FtexTool
 {
     internal class FtexToolArguments
     {
-        private readonly List<string> _errors;
-
         public FtexToolArguments()
         {
-            _errors = new List<string>();
+            Errors = new List<string>();
         }
 
         public bool DisplayHelp { get; set; }
+
         public FtexTextureType TextureType { get; set; }
+
         public string InputPath { get; set; }
+
         public bool DirectoryInput { get; set; }
+
         public string OutputPath { get; set; }
+
         public int? FtexsFileCount { get; set; }
 
-        public List<string> Errors
+        public List<string> Errors { get; }
+
+        public static FtexToolArguments Parse(string[] args)
         {
-            get { return _errors; }
+            FtexToolArguments arguments = new FtexToolArguments
+            {
+                DisplayHelp = false,
+                TextureType = FtexTextureType.DiffuseMap,
+                InputPath = "",
+                OutputPath = ""
+            };
+            if (args.Length == 0)
+            {
+                arguments.DisplayHelp = true;
+                return arguments;
+            }
+
+            bool expectType = false;
+            bool expectFtexs = false;
+            bool expectInput = false;
+            bool expectOutput = false;
+
+            int argIndex = 0;
+            while (argIndex < args.Length)
+            {
+                string arg = args[argIndex];
+                argIndex++;
+                if (expectType)
+                {
+                    arguments.ReadType(arg);
+                    expectType = false;
+                }
+                else if (expectFtexs)
+                {
+                    arguments.ReadFtexsCount(arg);
+                    expectFtexs = false;
+                }
+                else if (expectInput)
+                {
+                    arguments.ReadInput(arg);
+                    expectInput = false;
+                }
+                else if (expectOutput)
+                {
+                    arguments.ReadOutput(arg);
+                    expectOutput = false;
+                }
+                else if (arg.StartsWith("-"))
+                {
+                    switch (arg)
+                    {
+                        case "-h":
+                        case "-help":
+                            arguments.DisplayHelp = true;
+                            break;
+                        case "-t":
+                        case "-type":
+                            expectType = true;
+                            break;
+                        case "-f":
+                        case "-ftexs":
+                            expectFtexs = true;
+                            break;
+                        case "-i":
+                        case "-input":
+                            expectInput = true;
+                            break;
+                        case "-o":
+                        case "-output":
+                            expectOutput = true;
+                            break;
+                        default:
+                            arguments.Errors.Add("Unknown option");
+                            break;
+                    }
+                }
+                else
+                {
+                    expectInput = true;
+                    expectOutput = true;
+                    argIndex--;
+                }
+            }
+            return arguments;
         }
 
         public void ReadType(string type)
@@ -47,7 +131,7 @@ namespace FtexTool
                     TextureType = FtexTextureType.CubeMap;
                     break;
                 default:
-                    Errors.Add(string.Format("{0} is not a valid texture type.", type));
+                    Errors.Add($"{type} is not a valid texture type.");
                     break;
             }
         }
@@ -62,7 +146,7 @@ namespace FtexTool
             }
             catch (Exception)
             {
-                Errors.Add(string.Format("File/Directory {0} not found", inputPath));
+                Errors.Add($"File/Directory {inputPath} not found");
             }
         }
 
@@ -80,7 +164,7 @@ namespace FtexTool
             }
             else
             {
-                Errors.Add(string.Format("Invalid ftexs file count {0}", ftexsFileCount));
+                Errors.Add($"Invalid ftexs file count {ftexsFileCount}");
             }
         }
     }

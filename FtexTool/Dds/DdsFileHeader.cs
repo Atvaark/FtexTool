@@ -74,11 +74,9 @@ namespace FtexTool.Dds
 
         public override string ToString()
         {
-            return string.Format("Size: {0}, Flags: {1}, Height: {2}, Width: {3}," +
-                                 " PitchOrLinearSize: {4}, Depth: {5}, MipMapCount: {6}," +
-                                 " PixelFormat: {7}, Caps: {8}, Caps2: {9}, Caps3: {10}, " +
-                                 "Caps4: {11}", Size, Flags, Height, Width, PitchOrLinearSize,
-                                 Depth, MipMapCount, PixelFormat, Caps, Caps2, Caps3, Caps4);
+            return $"Size: {Size}, Flags: {Flags}, Height: {Height}, Width: {Width}," +
+                   $" PitchOrLinearSize: {PitchOrLinearSize}, Depth: {Depth}, MipMapCount: {MipMapCount}," +
+                   $" PixelFormat: {PixelFormat}, Caps: {Caps}, Caps2: {Caps2}, Caps3: {Caps3}, " + $"Caps4: {Caps4}";
         }
     }
 }

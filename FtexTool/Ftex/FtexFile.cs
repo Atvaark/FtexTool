@@ -11,10 +11,15 @@ namespace FtexTool.Ftex
     public class FtexFile
     {
         private const long MagicNumber1 = 4612226451348214854; // FTEX 85 EB 01 40
+
         private const int OneInt32 = 1;
+
         private const int ZeroInt32 = 0;
+
         private const byte ZeroByte = 0;
+
         private readonly Dictionary<int, FtexsFile> _ftexsFiles;
+
         private readonly List<FtexFileMipMapInfo> _mipMapInfos;
 
         public FtexFile()
@@ -25,33 +30,37 @@ namespace FtexTool.Ftex
         }
 
         public short PixelFormatType { get; set; }
+
         public short Width { get; set; }
+
         public short Height { get; set; }
+
         public short Depth { get; set; }
+
         public byte MipMapCount { get; set; }
+
         // Flags 
         // 0x0 when file ends with _nrt 
         // 0x2 else
         public byte NrtFlag { get; set; }
+
         // Flags
         // 0   (~3%)
         // 17  (<1%)
         // 273 (~96%)
         public short UnknownFlags { get; set; }
+
         public FtexTextureType TextureType { get; set; }
+
         public byte FtexsFileCount { get; set; }
+
         public byte AdditionalFtexsFileCount { get; set; }
+
         public byte[] Hash { get; set; }
 
-        public IEnumerable<FtexFileMipMapInfo> MipMapInfos
-        {
-            get { return _mipMapInfos; }
-        }
+        public IEnumerable<FtexFileMipMapInfo> MipMapInfos => _mipMapInfos;
 
-        public IEnumerable<FtexsFile> FtexsFiles
-        {
-            get { return _ftexsFiles.Values; }
-        }
+        public IEnumerable<FtexsFile> FtexsFiles => _ftexsFiles.Values;
 
         public byte[] Data
         {
@@ -171,11 +180,9 @@ namespace FtexTool.Ftex
                 foreach (var ftexsFileMipMap in ftexsFile.MipMaps)
                 {
                     FtexFileMipMapInfo ftexMipMapInfo = MipMapInfos.ElementAt(mipMapIndex);
-                    ftexMipMapInfo.Size = ftexsFileMipMap.IndexBlockSize
-                                            + ftexsFileMipMap.CompressedDataSize
-                                            + ftexsFileMipMap.Alignment;
+                    ftexMipMapInfo.Size = ftexsFileMipMap.BlockSize;
                     ftexMipMapInfo.ChunkCount = Convert.ToInt16(ftexsFileMipMap.Chunks.Count());
-                    ftexMipMapInfo.Offset = (int) ftexsFileMipMap.Offset;
+                    ftexMipMapInfo.Offset = (int) ftexsFileMipMap.BaseOffset;
                     ++mipMapIndex;
                 }
             }
