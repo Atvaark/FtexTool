@@ -164,7 +164,7 @@ namespace FtexTool
             else
             {
                 // Guess the ftexs file count
-                currentFtexsFileNumber = GetFtexsFileCount(mipMapsInfos.Sum(m => m.DecompressedFileSize));
+                currentFtexsFileNumber = GetFtexsFileCount(mipMapsInfos.Sum(m => m.DecompressedFileSize), mipMapsInfos.Count);
                 currentFtexsFileNumber = Math.Min(currentFtexsFileNumber, mipMapsInfos.Count);
             }
 
@@ -178,20 +178,42 @@ namespace FtexTool
             }
         }
 
-        private static byte GetFtexsFileCount(int fileSize)
+        /// <remarks>
+        /// I derived this algorithm via decision tree learning the TPP data set. (with sklearn)
+        /// 
+        /// The features that I used (<c>fileSize</c> and <c>mipMapCount</c>) had to be available in
+        /// the DDS files that FtexTool generates. 
+        /// That means that some custom Ftex flags can't be used to determine the amount of .ftexs files.
+        /// Having no access to flags such as <see cref="FtexFile.UnknownFlags"/> means that this
+        /// algorithm can't correctly classify that a .ftex file has more than 3 .ftexs files.
+        /// 
+        /// Stats:
+        ///       Predicts ~99,90% of the .ftexs file counts correctly. (The previos algorithm only got 44,00% correct.)
+        ///       Of the ~0,10% incorrect predictions ~97,00% predict a too small ftexs file count.
+        /// </remarks>
+        private static byte GetFtexsFileCount(int fileSize, int mipMapCount)
         {
-            // TODO: Find the correct algorithm.
-            if (fileSize <= 21872)
-                return 1;
-            if (fileSize <= 87408)
+            if (fileSize <= 76456)
+            {
+                if (fileSize <= 19112)
+                {
+                    return 1;
+                }
+
+                if (mipMapCount <= 3)
+                {
+                    return 1;
+                }
+
                 return 2;
-            if (fileSize <= 349552)
-                return 3;
-            if (fileSize <= 1398128)
-                return 4;
-            if (fileSize <= 11180000)
-                return 5;
-            return 6;
+            }
+
+            if (mipMapCount <= 4)
+            {
+                return 1;
+            }
+
+            return 3;
         }
 
         private static List<byte[]> GetMipMapData(DdsFile file)
