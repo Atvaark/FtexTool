@@ -34,7 +34,7 @@ namespace FtexTool.Dds
         {
             BinaryReader reader = new BinaryReader(inputStream, Encoding.Default, true);
             Size = reader.ReadInt32();
-            Flags = (DdsPixelFormatFlag) reader.ReadUInt32();
+            Flags = (DdsPixelFormatFlag)reader.ReadUInt32();
             FourCc = reader.ReadInt32();
             RgbBitCount = reader.ReadInt32();
             RBitMask = reader.ReadUInt32();
@@ -189,10 +189,10 @@ namespace FtexTool.Dds
             return pixelFormat;
         }
 
-        public static int CalculateImageSize(DdsPixelFormat pixelFormat, int width, int height)
+        public static int CalculateImageSize(DdsPixelFormat pixelFormat, int width, int height, int depth)
         {
             if (pixelFormat.RgbBitCount > 0)
-                return (int)((long)width * height * pixelFormat.RgbBitCount / 8);
+                return (int)((long)width * height * depth * pixelFormat.RgbBitCount / 8);
             if (pixelFormat.Equals(DdsPfDxt1()))
                 return width * height / 2; // ((width*height*32)/8)/8;
             if (pixelFormat.Equals(DdsPfDxt3()))
@@ -230,7 +230,7 @@ namespace FtexTool.Dds
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((DdsPixelFormat) obj);
+            return Equals((DdsPixelFormat)obj);
         }
 
         public override int GetHashCode()
@@ -238,13 +238,13 @@ namespace FtexTool.Dds
             unchecked
             {
                 var hashCode = Size;
-                hashCode = (hashCode*397) ^ (int) Flags;
-                hashCode = (hashCode*397) ^ FourCc;
-                hashCode = (hashCode*397) ^ RgbBitCount;
-                hashCode = (hashCode*397) ^ (int) RBitMask;
-                hashCode = (hashCode*397) ^ (int) GBitMask;
-                hashCode = (hashCode*397) ^ (int) BBitMask;
-                hashCode = (hashCode*397) ^ (int) ABitMask;
+                hashCode = (hashCode * 397) ^ (int)Flags;
+                hashCode = (hashCode * 397) ^ FourCc;
+                hashCode = (hashCode * 397) ^ RgbBitCount;
+                hashCode = (hashCode * 397) ^ (int)RBitMask;
+                hashCode = (hashCode * 397) ^ (int)GBitMask;
+                hashCode = (hashCode * 397) ^ (int)BBitMask;
+                hashCode = (hashCode * 397) ^ (int)ABitMask;
                 return hashCode;
             }
         }

@@ -18,20 +18,30 @@ namespace FtexTool
                 Header = new DdsFileHeader
                 {
                     Size = DdsFileHeader.DefaultHeaderSize,
-                    Flags = DdsFileHeaderFlags.Texture | DdsFileHeaderFlags.MipMap,
+                    Flags = DdsFileHeaderFlags.Texture,
                     Height = file.Height,
                     Width = file.Width,
                     Depth = file.Depth,
-                    MipMapCount = file.MipMapCount,
-                    Caps = DdsSurfaceFlags.Texture | DdsSurfaceFlags.MipMap
+                    Caps = DdsSurfaceFlags.Texture
                 }
             };
+
+            if (file.MipMapCount > 1)
+            {
+                result.Header.Flags |= DdsFileHeaderFlags.MipMap;
+                result.Header.Caps |= DdsSurfaceFlags.MipMap;
+                result.Header.MipMapCount = file.MipMapCount;
+            }
+
+            if (file.Depth > 0)
+            {
+                result.Header.Flags |= DdsFileHeaderFlags.Volume;
+            }
 
             switch (file.PixelFormatType)
             {
                 case 0:
                     result.Header.PixelFormat = DdsPixelFormat.DdsPfA8R8G8B8();
-                    result.Header.Flags = result.Header.Flags | DdsFileHeaderFlags.Volume;
                     break;
                 case 1:
                     result.Header.PixelFormat = DdsPixelFormat.DdsLuminance();
@@ -77,7 +87,7 @@ namespace FtexTool
             result.AddMipMapInfos(mipMaps);
             result.AddFtexsFiles(ftexsFiles);
             result.FtexsFileCount = Convert.ToByte(ftexsFiles.Count);
-            result.AdditionalFtexsFileCount = Convert.ToByte(ftexsFiles.Count - 1);
+            result.AdditionalFtexsFileCount = ftexsFiles.Count > 0 ? Convert.ToByte(ftexsFiles.Count - 1) : (byte) 0;
             result.UnknownFlags = 273; // TODO: Add an argument to set this value.
             result.TextureType = textureType;
             return result;
@@ -223,12 +233,13 @@ namespace FtexTool
             List<byte[]> mipMapDatas = new List<byte[]>();
             byte[] data = file.Data;
             int dataOffset = 0;
-            var width = file.Header.Width;
-            var height = file.Header.Height;
+            int width = file.Header.Width;
+            int height = file.Header.Height;
+            int depth = file.Header.Flags.HasFlag(DdsFileHeaderFlags.Volume) ? file.Header.Depth : 1;
             int mipMapsCount = file.Header.Flags.HasFlag(DdsFileHeaderFlags.MipMap) ? file.Header.MipMapCount : 1;
             for (int i = 0; i < mipMapsCount; i++)
             {
-                int size = DdsPixelFormat.CalculateImageSize(file.Header.PixelFormat, width, height);
+                int size = DdsPixelFormat.CalculateImageSize(file.Header.PixelFormat, width, height, depth);
                 var buffer = new byte[size];
                 Array.Copy(data, dataOffset, buffer, 0, size);
                 mipMapDatas.Add(buffer);
