@@ -43,16 +43,28 @@ namespace FtexTool.Ftexs
                 return IndexBlockSize + Chunks.Sum(chunk => chunk.WrittenChunkSize) + Alignment;
             }
         }
-
-        public static FtexsFileMipMap ReadFtexsFileMipMap(Stream inputStream, short chunkCount, int baseOffset)
+        
+        public static FtexsFileMipMap ReadFtexsFileMipMap(
+            Stream inputStream,
+            short chunkCount,
+            int baseOffset,
+            int fileSize)
         {
             FtexsFileMipMap result = new FtexsFileMipMap();
-            result.Read(inputStream, chunkCount, baseOffset);
+            result.Read(inputStream, chunkCount, baseOffset, fileSize);
             return result;
         }
-
-        public void Read(Stream inputStream, short chunkCount, int baseOffset)
+        
+        public void Read(Stream inputStream, short chunkCount, int baseOffset, int fileSize)
         {
+            if (chunkCount == 0)
+            {
+                FtexsFileChunk chunk = FtexsFileChunk.ReadFtexsFileSingleChunk(
+                    inputStream,
+                    fileSize);
+                AddChunk(chunk);
+            }
+
             for (int i = 0; i < chunkCount; i++)
             {
                 FtexsFileChunk chunk = FtexsFileChunk.ReadFtexsFileChunk(inputStream, baseOffset);

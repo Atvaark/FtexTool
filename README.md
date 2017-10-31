@@ -21,12 +21,18 @@ Options:
 --------
 ```
   -h|help  Displays the help message
-  -t|type  type_name
+  -t|type  [type_name]
            d|diffuse (default)
            m|material
            n|normal
            c|cube
-  -f|ftexs positive_number *Max ftexs file count* 
+  -fl|flags [flag_name]
+           Default (default)
+           Clp
+           Unknown
+  -f|ftexs [number]
+           e. g. 3 to create up to 3 ftexs files
+                 0 to embed all ftexs files inside the ftex file
   -i|input file_name|folder_Name
   -o|output folder_name
 ```
@@ -59,7 +65,13 @@ Converting a .dds normalmap file to .ftex
 FtexTool -t n file_name.dds
 ```
 
+Converting a .dds Clp file to .ftex
+```
+FtexTool -fl Clp file_name_clp.dds
+```
+
 Important
 --------
 * When repacking custom textures remember to also repack all .pftxs files that contain the changed files with the [GzsTool](https://github.com/Atvaark/GzsTool)
 * Fox Engine uses the pixel format DXT1 for textures without alpha channel and DXT5 for textures with alpha channel. Changing the pixel format could lead to unexpected results.
+* Fox Engine 2015 (MGSV) doesn't support embedding .ftexs files inside .ftex files.

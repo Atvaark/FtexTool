@@ -54,17 +54,24 @@ namespace FtexTool.Test
 
         public class DdsOptions
         {
-            public DdsOptions(DdsPixelFormat pixelFormat, short width, short height, short mipMapCount)
+            public DdsOptions(DdsPixelFormat pixelFormat, short width, short height, short depth, short mipMapCount)
             {
                 PixelFormat = pixelFormat;
                 Width = width;
                 Height = height;
+                Depth = depth;
                 MipMapCount = mipMapCount;
+            }
+
+            public DdsOptions(DdsPixelFormat pixelFormat, short width, short height, short mipMapCount)
+                : this(pixelFormat, width, height, depth: 0, mipMapCount: mipMapCount)
+            {
             }
 
             public DdsPixelFormat PixelFormat { get; }
             public short Width { get; }
             public short Height { get; }
+            public short Depth { get; }
             public short MipMapCount { get; }
         }
 
@@ -83,28 +90,40 @@ namespace FtexTool.Test
             ddsFile.Header = new DdsFileHeader
             {
                 Size = DdsFileHeader.DefaultHeaderSize,
-                Flags = DdsFileHeaderFlags.Texture | DdsFileHeaderFlags.MipMap,
+                Flags = DdsFileHeaderFlags.Texture,
                 Width = options.Width,
                 Height = options.Height,
-                Depth = 1,
+                Depth = options.Depth,
                 MipMapCount = options.MipMapCount,
-                Caps = DdsSurfaceFlags.Texture | DdsSurfaceFlags.MipMap,
+                Caps = DdsSurfaceFlags.Texture,
                 PixelFormat = options.PixelFormat
             };
 
-            if (ddsFile.Header.PixelFormat.Equals(DdsPixelFormat.DdsPfA8R8G8B8()))
+            if (ddsFile.Header.Depth > 1)
             {
                 ddsFile.Header.Flags |= DdsFileHeaderFlags.Volume;
+            }
+
+            int mipMapCount = ddsFile.Header.MipMapCount;
+            if (ddsFile.Header.MipMapCount == 1)
+            {
+                ddsFile.Header.MipMapCount = 0;
+            }
+            else if (ddsFile.Header.MipMapCount > 1)
+            {
+                ddsFile.Header.Flags |= DdsFileHeaderFlags.MipMap;
+                ddsFile.Header.Caps |= DdsSurfaceFlags.MipMap;
             }
 
             const int minimumWidth = 4;
             const int minimumHeight = 4;
             int mipMapHeight = ddsFile.Header.Height;
             int mipMapWidth = ddsFile.Header.Width;
+            int mipMapDepth = ddsFile.Header.Depth == 0 ? 1 : ddsFile.Header.Depth;
             int mipMapBufferSize = 0;
-            for (int i = 0; i < ddsFile.Header.MipMapCount; i++)
+            for (int i = 0; i < mipMapCount; i++)
             {
-                int mipMapSize = DdsPixelFormat.CalculateImageSize(ddsFile.Header.PixelFormat, mipMapWidth, mipMapHeight);
+                int mipMapSize = DdsPixelFormat.CalculateImageSize(ddsFile.Header.PixelFormat, mipMapWidth, mipMapHeight, mipMapDepth);
                 mipMapBufferSize += mipMapSize;
                 mipMapWidth = Math.Max(mipMapWidth / 2, minimumWidth);
                 mipMapHeight = Math.Max(mipMapHeight / 2, minimumHeight);
@@ -115,6 +134,7 @@ namespace FtexTool.Test
             {
                 ddsFile.Data[i] = (byte)(i % 0xFF);
             }
+
 
             return ddsFile;
         }
@@ -189,6 +209,7 @@ namespace FtexTool.Test
                 yield return new object[] { new DdsTestCase(new DdsOptions(DdsPixelFormat.DdsPfA8R8G8B8(), 16, 16, 1), "A8R8G8B8 16x16 (1 mip)") };
                 yield return new object[] { new DdsTestCase(new DdsOptions(DdsPixelFormat.DdsPfA8R8G8B8(), 128, 128, 1), "A8R8G8B8 128x128 (1 mip)") };
                 yield return new object[] { new DdsTestCase(new DdsOptions(DdsPixelFormat.DdsPfA8R8G8B8(), 256, 2, 1), "A8R8G8B8 256x2 (1 mip)") };
+                yield return new object[] { new DdsTestCase(new DdsOptions(DdsPixelFormat.DdsPfA8R8G8B8(), 16, 16, 16, 1), "A8R8G8B8 16x16x16 (1 mip)") };
                 yield return new object[] { new DdsTestCase(new DdsOptions(DdsPixelFormat.DdsLuminance(), 512, 512, 1), "Luminance 512x512 (1 mip)") };
                 yield return new object[] { new DdsTestCase(new DdsOptions(DdsPixelFormat.DdsPfDxt1(), 128, 64, 6), "dxt1 128x64 (6 mip)") };
                 yield return new object[] { new DdsTestCase(new DdsOptions(DdsPixelFormat.DdsPfDxt1(), 128, 128, 6), "dxt1 128x128 (6 mip)") };

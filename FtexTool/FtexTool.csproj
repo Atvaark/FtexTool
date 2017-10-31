@@ -80,6 +80,7 @@
     <Compile Include="Ftexs\FtexsFileMipMap.cs" />
     <Compile Include="FtexToolArguments.cs" />
     <Compile Include="Ftex\Enum\FtexTextureType.cs" />
+    <Compile Include="Ftex\Enum\FtexUnknownFlags.cs" />
     <Compile Include="Ftex\FtexFile.cs" />
     <Compile Include="Ftex\FtexFileMipMapInfo.cs" />
     <Compile Include="Ftexs\FtexsFile.cs" />

@@ -16,6 +16,8 @@ namespace FtexTool
 
         public FtexTextureType TextureType { get; set; }
 
+        public FtexUnknownFlags UnknownFlags { get; set; }
+
         public string InputPath { get; set; }
 
         public bool DirectoryInput { get; set; }
@@ -32,6 +34,7 @@ namespace FtexTool
             {
                 DisplayHelp = false,
                 TextureType = FtexTextureType.DiffuseMap,
+                UnknownFlags = FtexUnknownFlags.Default,
                 InputPath = "",
                 OutputPath = ""
             };
@@ -42,6 +45,7 @@ namespace FtexTool
             }
 
             bool expectType = false;
+            bool expectUnknownFlags = false;
             bool expectFtexs = false;
             bool expectInput = false;
             bool expectOutput = false;
@@ -60,6 +64,11 @@ namespace FtexTool
                 {
                     arguments.ReadFtexsCount(arg);
                     expectFtexs = false;
+                }
+                else if (expectUnknownFlags)
+                {
+                    arguments.ReadUnknownFlags(arg);
+                    expectUnknownFlags = false;
                 }
                 else if (expectInput)
                 {
@@ -82,6 +91,10 @@ namespace FtexTool
                         case "-t":
                         case "-type":
                             expectType = true;
+                            break;
+                        case "-fl":
+                        case "-flags":
+                            expectUnknownFlags = true;
                             break;
                         case "-f":
                         case "-ftexs":
@@ -108,6 +121,25 @@ namespace FtexTool
                 }
             }
             return arguments;
+        }
+
+        private void ReadUnknownFlags(string flagArg)
+        {
+            FtexUnknownFlags flags;
+            if (Enum.TryParse<FtexUnknownFlags>(flagArg, out flags))
+            {
+                UnknownFlags = flags;
+                return;
+            }
+
+            short flagsValue;
+            if (short.TryParse(flagArg, out flagsValue))
+            {
+                UnknownFlags = (FtexUnknownFlags)flagsValue;
+                return;
+            }
+
+            Errors.Add($"{flagArg} is not a valid flag.");
         }
 
         public void ReadType(string type)
@@ -158,7 +190,7 @@ namespace FtexTool
         public void ReadFtexsCount(string ftexsFileCount)
         {
             int count;
-            if (int.TryParse(ftexsFileCount, out count) && count > 0)
+            if (int.TryParse(ftexsFileCount, out count) && count >= 0)
             {
                 FtexsFileCount = count;
             }

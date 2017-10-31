@@ -26,15 +26,18 @@ namespace FtexTool.Ftexs
             CompressedChunkSize = reader.ReadInt16();
             ChunkSize = reader.ReadInt16();
             EncodedDataOffset = reader.ReadUInt32();
-
+            
+            long dataOffset;
             if (EncodedDataOffset > RelativeOffsetValue)
             {
-                DataOffset = baseOffset + (EncodedDataOffset - RelativeOffsetValue);
+                dataOffset = baseOffset + (EncodedDataOffset - RelativeOffsetValue);
             }
             else
             {
-                DataOffset = baseOffset + EncodedDataOffset;
+                dataOffset = baseOffset + EncodedDataOffset;
             }
+
+            DataOffset = dataOffset;
         }
 
         public void SetDataOffset(Stream outputStream, uint baseOffset, bool isSingleChunk)
@@ -52,7 +55,7 @@ namespace FtexTool.Ftexs
                 EncodedDataOffset = Convert.ToUInt32(outputStream.Position) - baseOffset;
             }
         }
-        
+
         public void Write(BinaryWriter writer)
         {
             writer.Write(WrittenChunkSize);

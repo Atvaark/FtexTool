@@ -57,6 +57,7 @@ namespace FtexTool
                         arguments.InputPath,
                         arguments.OutputPath,
                         arguments.TextureType,
+                        arguments.UnknownFlags,
                         arguments.FtexsFileCount);
                 }
                 else
@@ -80,7 +81,11 @@ namespace FtexTool
                               "           m|material\n" +
                               "           n|normal\n" +
                               "           c|cube\n" +
-                              "  -f|ftexs positive_number\n" +
+                              "  -fl|flags flag_name\n" +
+                              "            Default (default)\n" +
+                              "            Clp\n" +
+                              "            Unknown\n" +
+                              "  -f|ftexs number\n" +
                               "  -i|input file_name|folder_Name\n" +
                               "  -o|output folder_name\n" +
                               "Examples:\n" +
@@ -90,32 +95,48 @@ namespace FtexTool
                               "  FtexTool -t n file.dds Packs a dds file as a normal map\n");
         }
 
-        private static void PackDdsFile(string filePath, string outputPath, FtexTextureType textureType, int? ftexsFileCount)
+        private static void PackDdsFile(string filePath, string outputPath, FtexTextureType textureType, FtexUnknownFlags flags, int? ftexsFileCount)
         {
-            string fileDirectory = String.IsNullOrEmpty(outputPath) ? Path.GetDirectoryName(filePath) : outputPath;
+            string fileDirectory = String.IsNullOrEmpty(outputPath) ? Path.GetDirectoryName(filePath) ?? string.Empty : outputPath;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
 
             DdsFile ddsFile = GetDdsFile(filePath);
-            FtexFile ftexFile = FtexDdsConverter.ConvertToFtex(ddsFile, textureType, ftexsFileCount);
-
-            foreach (var ftexsFile in ftexFile.FtexsFiles)
-            {
-                string ftexsFileName = $"{fileName}.{ftexsFile.FileNumber}.ftexs";
-                string ftexsFilePath = Path.Combine(fileDirectory, ftexsFileName);
-
-                using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Create))
-                {
-                    ftexsFile.Write(ftexsStream);
-                }
-            }
-
-            ftexFile.UpdateOffsets();
-
+            FtexFile ftexFile = FtexDdsConverter.ConvertToFtex(
+                ddsFile,
+                textureType,
+                flags,
+                ftexsFileCount);
+            
             string ftexFileName = $"{fileName}.ftex";
             string ftexFilePath = Path.Combine(fileDirectory, ftexFileName);
 
             using (FileStream ftexStream = new FileStream(ftexFilePath, FileMode.Create))
             {
+                if (ftexsFileCount == 0)
+                {
+                    ftexStream.Seek(ftexFile.Size, SeekOrigin.Begin);
+                }
+
+                foreach (var ftexsFile in ftexFile.FtexsFiles)
+                {
+                    if (ftexsFileCount == 0)
+                    {
+                        ftexsFile.Write(ftexStream);
+                    }
+                    else
+                    {
+                        string ftexsFileName = $"{fileName}.{ftexsFile.FileNumber}.ftexs";
+                        string ftexsFilePath = Path.Combine(fileDirectory, ftexsFileName);
+                        using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Create))
+                        {
+                            ftexsFile.Write(ftexsStream);
+                        }
+                    }
+
+                }
+
+                ftexFile.UpdateOffsets();
+                ftexStream.Seek(0, SeekOrigin.Begin);
                 ftexFile.Write(ftexStream);
             }
         }
@@ -132,7 +153,7 @@ namespace FtexTool
 
         private static void UnpackFtexFile(string filePath, string outputPath)
         {
-            string fileDirectory = string.IsNullOrEmpty(outputPath) ? Path.GetDirectoryName(filePath) : outputPath;
+            string fileDirectory = string.IsNullOrEmpty(outputPath) ? Path.GetDirectoryName(filePath) ?? string.Empty : outputPath;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
 
             FtexFile ftexFile = GetFtexFile(filePath);
@@ -149,17 +170,16 @@ namespace FtexTool
 
         private static FtexFile GetFtexFile(string filePath)
         {
-            string fileDirectory = Path.GetDirectoryName(filePath);
+            string fileDirectory = Path.GetDirectoryName(filePath) ?? string.Empty;
             string fileName = Path.GetFileNameWithoutExtension(filePath);
-
-
+            
             FtexFile ftexFile;
-            using (FileStream ftexStream = new FileStream(filePath, FileMode.Open))
+            using (FileStream ftexStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
                 ftexFile = FtexFile.ReadFtexFile(ftexStream);
             }
 
-            for (byte fileNumber = 1; fileNumber <= ftexFile.FtexsFileCount; fileNumber++)
+            for (byte fileNumber = 0; fileNumber <= ftexFile.FtexsFileCount; fileNumber++)
             {
                 FtexsFile ftexsFile = new FtexsFile
                 {
@@ -170,16 +190,24 @@ namespace FtexTool
 
             foreach (var mipMapInfo in ftexFile.MipMapInfos)
             {
-                string ftexsName = $"{fileName}.{mipMapInfo.FtexsFileNumber}.ftexs";
+                string ftexsName;
+                ftexsName = mipMapInfo.FtexsFileNumber == 0
+                    ? Path.GetFileName(filePath)
+                    : $"{fileName}.{mipMapInfo.FtexsFileNumber}.ftexs";
+
                 string ftexsFilePath = Path.Combine(fileDirectory, ftexsName);
                 FtexsFile ftexsFile;
                 if (ftexFile.TryGetFtexsFile(mipMapInfo.FtexsFileNumber, out ftexsFile)
                     && File.Exists(ftexsFilePath))
                 {
-                    using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Open))
+                    using (FileStream ftexsStream = new FileStream(ftexsFilePath, FileMode.Open, FileAccess.Read))
                     {
                         ftexsStream.Position = mipMapInfo.Offset;
-                        ftexsFile.Read(ftexsStream, mipMapInfo.ChunkCount, mipMapInfo.Offset);
+                        ftexsFile.Read(
+                            ftexsStream,
+                            mipMapInfo.ChunkCount,
+                            mipMapInfo.Offset,
+                            mipMapInfo.DecompressedFileSize);
                     }
                 }
                 else

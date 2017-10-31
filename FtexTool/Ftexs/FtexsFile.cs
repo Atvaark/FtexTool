@@ -30,12 +30,20 @@ namespace FtexTool.Ftexs
             }
         }
         
-        public void Read(Stream inputStream, short chunkCount, int baseOffset)
+        public void Read(
+            Stream inputStream,
+            short chunkCount,
+            int baseOffset,
+            int fileSize)
         {
-            FtexsFileMipMap mipMap = FtexsFileMipMap.ReadFtexsFileMipMap(inputStream, chunkCount, baseOffset);
+            FtexsFileMipMap mipMap = FtexsFileMipMap.ReadFtexsFileMipMap(
+                inputStream,
+                chunkCount,
+                baseOffset,
+                fileSize);
             AddMipMap(mipMap);
         }
-
+        
         public void AddMipMap(FtexsFileMipMap mipMap)
         {
             _mipMaps.Add(mipMap);

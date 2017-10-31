@@ -5,6 +5,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+.vs
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -154,3 +155,4 @@ FakesAssemblies/
 #NuGet
 packages
 !packages/repositories.config
+

@@ -48,7 +48,7 @@ namespace FtexTool.Ftex
         // 0   (~3%)
         // 17  (<1%)
         // 273 (~96%)
-        public short UnknownFlags { get; set; }
+        public FtexUnknownFlags UnknownFlags { get; set; }
 
         public FtexTextureType TextureType { get; set; }
 
@@ -73,6 +73,16 @@ namespace FtexTool.Ftex
                     stream.Write(ftexsFileData, 0, ftexsFileData.Length);
                 }
                 return stream.ToArray();
+            }
+        }
+
+        public int Size
+        {
+            get
+            {
+                const int headerSize = 64;
+                const int mipMapInfoSize = 16;
+                return headerSize + mipMapInfoSize * _mipMapInfos.Count;
             }
         }
 
@@ -111,7 +121,7 @@ namespace FtexTool.Ftex
             Depth = reader.ReadInt16();
             MipMapCount = reader.ReadByte();
             NrtFlag = reader.ReadByte();
-            UnknownFlags = reader.ReadInt16();
+            UnknownFlags = (FtexUnknownFlags)reader.ReadInt16();
             reader.Assert(OneInt32);
             reader.Assert(ZeroInt32);
             TextureType = (FtexTextureType) reader.ReadInt32();
@@ -154,7 +164,7 @@ namespace FtexTool.Ftex
             writer.Write(Depth);
             writer.Write(MipMapCount);
             writer.Write(NrtFlag);
-            writer.Write(UnknownFlags);
+            writer.Write((short)UnknownFlags);
             writer.Write(OneInt32);
             writer.Write(ZeroInt32);
             writer.Write(Convert.ToInt32(TextureType));

@@ -11,12 +11,28 @@ namespace FtexTool.Ftexs
         private byte[] ChunkData { get; set; }
 
         private readonly FtexsFileChunkIndex _index = new FtexsFileChunkIndex();
-        
+
         public static FtexsFileChunk ReadFtexsFileChunk(Stream inputStream, int baseOffset)
         {
             FtexsFileChunk result = new FtexsFileChunk();
             result.Read(inputStream, baseOffset);
             return result;
+        }
+
+        public static FtexsFileChunk ReadFtexsFileSingleChunk(
+            Stream inputStream,
+            int fileSize)
+        {
+            FtexsFileChunk result = new FtexsFileChunk();
+            result.ReadSingleChunk(inputStream, fileSize);
+            return result;
+        }
+
+        private void ReadSingleChunk(Stream inputStream, int fileSize)
+        {
+            byte[] chunkBuffer = new byte[fileSize];
+            inputStream.Read(chunkBuffer, 0, fileSize);
+            SetData(chunkBuffer, compressed: false, chunked: false);
         }
 
         public void Read(Stream inputStream, int baseOffset)
@@ -29,26 +45,32 @@ namespace FtexTool.Ftexs
             reader.BaseStream.Position = _index.DataOffset;
             byte[] data = reader.ReadBytes(_index.CompressedChunkSize);
             bool compressed = _index.CompressedChunkSize != _index.ChunkSize;
-            SetData(data, compressed);
+            SetData(data, compressed, chunked: true);
 
             reader.BaseStream.Position = indexEndPosition;
         }
-        
-        public void SetData(byte[] chunkData, bool compressed)
+
+        public void SetData(byte[] chunkData, bool compressed, bool chunked)
         {
             if (compressed)
             {
                 ChunkData = ZipUtility.Inflate(chunkData);
 
-                _index.ChunkSize = Convert.ToInt16(ChunkData.Length);
-                _index.CompressedChunkSize = Convert.ToInt16(chunkData.Length);
+                if (chunked)
+                {
+                    _index.ChunkSize = Convert.ToInt16(ChunkData.Length);
+                    _index.CompressedChunkSize = Convert.ToInt16(chunkData.Length);
+                }
             }
             else
             {
                 ChunkData = chunkData;
 
-                _index.ChunkSize = Convert.ToInt16(chunkData.Length);
-                _index.CompressedChunkSize = Convert.ToInt16(ZipUtility.Deflate(chunkData).Length);
+                if (chunked)
+                {
+                    _index.ChunkSize = Convert.ToInt16(chunkData.Length);
+                    _index.CompressedChunkSize = Convert.ToInt16(ZipUtility.Deflate(chunkData).Length);
+                }
             }
         }
 
